@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import time
 
 
 class ReplayBuffer(object):
@@ -38,3 +39,38 @@ class ReplayBuffer(object):
 			torch.FloatTensor(self.reward[ind]).to(self.device),
 			torch.FloatTensor(self.not_done[ind]).to(self.device)
 		)
+
+
+def Log_save_name4gail(args):
+	time_str = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+	save_name = args.env_name + '_seed_{}_total_steps_{}_num_trajs_{}_subsample_frequency_{}_prepoch_{}_bcgail_{}_decay_{}_gamma_{}_' \
+                                'red_{}_sail_{}_wdail_{}_states_only_{}_reward_type_{}'\
+                    .format(args.seed,
+                            args.num_env_steps,
+                            args.num_trajs,
+                            args.subsample_frequency,
+                            args.gail_prepoch,
+                            args.bcgail,
+                            args.decay,
+                            args.gailgamma,
+                            args.red,
+                            args.sail,
+                            args.wdail,
+                            args.states_only,
+                            args.reward_type,
+                            ) + "_" + time_str
+	return save_name
+
+
+def Log_save_name4td3(args):
+	time_str = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+	save_name = args.env + '_seed_{}_total_steps_{}_start_steps_{}_eval_freq_{}_expl_noise_{}_gamma_{}_tau_{}_policy_freq_{}' .format(args.seed,
+                            args.total_steps,
+                            args.start_steps,
+                            args.eval_freq,
+                            args.expl_noise,
+                            args.discount,
+                            args.tau	,
+                            args.policy_freq
+                            ) + "_" + time_str
+	return save_name
