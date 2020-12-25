@@ -29,7 +29,7 @@ def eval_policy(policy, env_name, seed, eval_episodes=10):
 	avg_reward /= eval_episodes
 
 	print("---------------------------------------")
-	print(f"Evaluation over {eval_episodes} episodes: {avg_reward:.1f}")
+	print(f"env:{env_name}, evaluation over last {eval_episodes} episodes: {avg_reward:.1f}")
 	print("---------------------------------------")
 	return avg_reward
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
 		if done:
 			# +1 to account for 0 indexing. +0 on ep_timesteps since it will increment +1 even if done=True
-			print(f"current steps: {t+1} path_len: {episode_timesteps} reward: {episode_reward:.1f}")
+			print(f"env:{args.env}, current steps: {t+1}, path_len: {episode_timesteps}, reward: {episode_reward:.1f}")
 			# Reset environment
 			state, done = env.reset(), False
 			episode_reward = 0
