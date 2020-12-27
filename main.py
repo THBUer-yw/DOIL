@@ -71,15 +71,12 @@ if __name__ == "__main__":
 		shutil.rmtree(log_save_path)
 
 	writer = SummaryWriter(log_save_path)
-
 	if os.path.exists("./results/" + log_save_name):
 		shutil.rmtree("./results/" + log_save_name)
 	os.makedirs("./results/" + log_save_name)
-
 	log_file = os.path.join("./results/" + log_save_name, "train_log.txt")
 
 	env = gym.make(args.env)
-
 	# Set seeds
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
