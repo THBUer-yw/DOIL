@@ -49,6 +49,12 @@ CUDA_VISIBLE_DEVICES=2 python3 main.py --seed $seed3 --env "InvertedPendulum-v2"
 CUDA_VISIBLE_DEVICES=2 python3 main.py --seed $seed4 --env "InvertedPendulum-v2" --policy "TD3" --start_steps 1000&
 CUDA_VISIBLE_DEVICES=2 python3 main.py --seed $seed5 --env "InvertedPendulum-v2" --policy "TD3" --start_steps 1000
 
+CUDA_VISIBLE_DEVICES=3 python3 main.py --seed $seed1 --env "InvertedDoublePendulum-v2" --policy "TD3" --start_steps 1000&
+CUDA_VISIBLE_DEVICES=3 python3 main.py --seed $seed2 --env "InvertedDoublePendulum-v2" --policy "TD3" --start_steps 1000&
+CUDA_VISIBLE_DEVICES=3 python3 main.py --seed $seed3 --env "InvertedDoublePendulum-v2" --policy "TD3" --start_steps 1000&
+CUDA_VISIBLE_DEVICES=3 python3 main.py --seed $seed4 --env "InvertedDoublePendulum-v2" --policy "TD3" --start_steps 1000&
+CUDA_VISIBLE_DEVICES=3 python3 main.py --seed $seed5 --env "InvertedDoublePendulum-v2" --policy "TD3" --start_steps 1000
+
 
 
 
