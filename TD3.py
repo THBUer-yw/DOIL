@@ -102,11 +102,13 @@ class TD3(object):
 		return self.actor(state).cpu().data.numpy().flatten()
 
 
-	def train(self, replay_buffer, batch_size=100):
+	def train(self, args, replay_buffer, gail=None):
 		self.total_it += 1
 
 		# Sample replay buffer 
-		state, action, next_state, reward, not_done = replay_buffer.sample(batch_size)
+		state, action, next_state, reward, not_done = replay_buffer.sample(args.batch_size)
+		if gail:
+			reward = gail.predict_reward(state, action, args.discount, not_done, args.reward_type)
 
 		with torch.no_grad():
 			# Select action according to policy and add clipped noise
