@@ -46,7 +46,7 @@ if __name__ == "__main__":
 	parser.add_argument('--gail', action='store_true', default=True, help='do imitation learning with gail')
 	parser.add_argument('--gail-batch-size', type=int, default=128, help='gail batch size (default: 128)')
 	parser.add_argument('--gail-experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
-	parser.add_argument('--gail-epoch', type=int, default=5, help='gail epochs (default: 5)')
+	parser.add_argument('--gail-epoch', type=int, default=2, help='gail epochs (default: 5)')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
 	parser.add_argument("--load_model", default="", help="Model load file name")
 	parser.add_argument("--noise_clip", default=0.5, help="Range to clip target policy noise")
