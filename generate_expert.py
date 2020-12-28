@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3")                  # Policy name (TD3, DDPG or OurDDPG)
     parser.add_argument("--env", default="HalfCheetah-v2")          # OpenAI gym environment name
-    parser.add_argument("--seed", default=8843, type=int)              # Sets Gym, PyTorch and Numpy seeds
+    parser.add_argument("--seed", default=1979, type=int)              # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--eval_episodes", default=10, type=int)       # How often (time steps) we evaluate
     args = parser.parse_args()
 
@@ -49,12 +49,12 @@ if __name__ == "__main__":
     model_file_name = args.env+"_"+"seed_"+str(args.seed)
     policy.load(f"./models/{model_file_name}", device)
 
-    data_file_name = args.env.lower()[:-3]+".pt"
-    if os.path.exists("./experts/"):
-        shutil.rmtree("./experts/")
-    os.makedirs("./experts/")
+    data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
+    if os.path.exists("./gail_experts/"):
+        shutil.rmtree("./gail_experts/")
+    os.makedirs("./gail_experts/")
 
-    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2":
+    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2" or "Humanoid-v2":
         max_lengh = 1000
     if args.env == "Reacher-v2":
         max_lengh = 50
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         "lengths": lengths
     }
 
-    torch.save(expert_data, os.path.join("./experts/", data_file_name), _use_new_zipfile_serialization=False)
+    torch.save(expert_data, os.path.join("./gail_experts/", data_file_name), _use_new_zipfile_serialization=False)
 
     print("---------------------------------------")
     print(f"env:{args.env}, evaluation over last {args.eval_episodes} episodes, mean_reward:{avg_reward:.1f}, reward_std:{reward_std:.1f}")
