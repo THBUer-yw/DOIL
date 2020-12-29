@@ -105,7 +105,7 @@ def Log_save_name4gail(args):
 
 def Log_save_name4td3(args):
 	time_str = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-	save_name = args.env + '_gail_{}_seed_{}_total_steps_{}_start_steps_{}_eval_freq_{}_expl_noise_{}_gamma_{}_tau_{}_policy_freq_{}' .format(args.seed,
+	save_name = args.env + '_gail_{}_seed_{}_total_steps_{}_start_steps_{}_eval_freq_{}_expl_noise_{}_gamma_{}_tau_{}_policy_freq_{}' .format(
 							args.gail,
 							args.seed,
                             args.total_steps,
