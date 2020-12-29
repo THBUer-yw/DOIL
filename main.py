@@ -217,6 +217,7 @@ if __name__ == "__main__":
 			mean_eval_rewards = eval_policy(policy, args.env, args.seed)
 			writer.add_scalar("eval/mean_reward", mean_eval_rewards, t+1)
 			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
-			if mean_eval_rewards > max_eval_rewards and args.save_model and not args.gail:
+			if mean_eval_rewards > max_eval_rewards and args.save_model:
 				max_eval_rewards = mean_eval_rewards
-				policy.save(f"./models/{file_name}")
+				if not args.gail:
+					policy.save(f"./models/{file_name}")
