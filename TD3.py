@@ -102,23 +102,20 @@ class TD3(object):
 		return self.actor(state).cpu().data.numpy().flatten()
 
 
-	def train(self, args, replay_buffer, gail=None):
+	def train(self, args, replay_buffer, writer, steps, gail=None):
 		self.total_it += 1
 
 		# Sample replay buffer 
 		state, action, next_state, reward, not_done = replay_buffer.sample(args.batch_size)
 		if gail:
 			reward = gail.predict_reward(state, action, args.discount, not_done, args.reward_type)
+			writer.add_scalar("discriminator/gail_reward", np.mean(np.array(reward.to("cpu")), axis=0), steps)
 
 		with torch.no_grad():
 			# Select action according to policy and add clipped noise
-			noise = (
-				torch.randn_like(action) * self.policy_noise
-			).clamp(-self.noise_clip, self.noise_clip)
+			noise = (torch.randn_like(action) * self.policy_noise).clamp(-self.noise_clip, self.noise_clip)
 			
-			next_action = (
-				self.actor_target(next_state) + noise
-			).clamp(-self.max_action, self.max_action)
+			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 
 			# Compute the target Q value
 			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
@@ -135,6 +132,7 @@ class TD3(object):
 		self.critic_optimizer.zero_grad()
 		critic_loss.backward()
 		self.critic_optimizer.step()
+		writer.add_scalar("train/value_loss", critic_loss, steps)
 
 		# Delayed policy updates
 		if self.total_it % self.policy_freq == 0:
@@ -146,6 +144,7 @@ class TD3(object):
 			self.actor_optimizer.zero_grad()
 			actor_loss.backward()
 			self.actor_optimizer.step()
+			writer.add_scalar("train/actor_loss", actor_loss, steps)
 
 			# Update the frozen target models
 			for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
