@@ -43,10 +43,11 @@ if __name__ == "__main__":
 	parser.add_argument("--eval_freq", default=5e3, type=int, help="How often (time steps) we evaluate")
 	parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
-	parser.add_argument('--gail', action='store_true', default=True, help='do imitation learning with gail')
-	parser.add_argument('--gail-batch-size', type=int, default=128, help='gail batch size (default: 128)')
-	parser.add_argument('--gail-experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
-	parser.add_argument('--gail-epoch', type=int, default=2, help='gail epochs (default: 5)')
+	parser.add_argument('--gail', default=False, help='do imitation learning with gail')
+	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
+	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
+	parser.add_argument('--gail_epoch', type=int, default=2, help='gail epochs (default: 5)')
+	parser.add_argument('--gail_prepoch', type=int, default=20, help='gail prepochs (default: 50)')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
 	parser.add_argument("--load_model", default="", help="Model load file name")
 	parser.add_argument("--noise_clip", default=0.5, help="Range to clip target policy noise")
@@ -66,18 +67,16 @@ if __name__ == "__main__":
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
 	args = parser.parse_args()
 
-	# file_name = f"{args.policy}_{args.env}_{args.seed}"
-	# print("---------------------------------------")
-	# print(f"Policy: {args.policy}, Env: {args.env}, Seed: {args.seed}")
-	# print("---------------------------------------")
-
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
 
 	if args.save_model and not os.path.exists("./models"):
 		os.makedirs("./models")
 
-	log_save_name = utils.Log_save_name4td3(args)
+	if args.gail:
+		log_save_name = utils.Log_save_name4gail(args)
+	else:
+		log_save_name = utils.Log_save_name4td3(args)
 	log_save_path = os.path.join("./runs", log_save_name)
 	if os.path.exists(log_save_path):
 		shutil.rmtree(log_save_path)
@@ -123,11 +122,20 @@ if __name__ == "__main__":
 	elif args.policy == "DDPG":
 		policy = DDPG.DDPG(**kwargs)
 
-	# if args.load_model != "":
-	# 	policy_file = file_name if args.load_model == "default" else args.load_model
-	# 	policy.load(f"./models/{policy_file}")
-
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
+
+	if args.gail:
+		file_name = os.path.join(args.gail_experts_dir, "trajs_{}.pt".format(args.env.split('-')[0].lower()))
+
+		expert_dataset = gail.ExpertDataset(file_name, num_trajectories=args.num_trajs, subsample_frequency=args.subsample_frequency, states_only=args.states_only)
+		args.gail_batch_size = min(args.gail_batch_size, len(expert_dataset))
+		drop_last = len(expert_dataset) > args.gail_batch_size
+		gail_train_loader = torch.utils.data.DataLoader(dataset=expert_dataset, batch_size=args.gail_batch_size, shuffle=True, drop_last=drop_last)
+
+		if args.states_only:
+			discr = gail.Discriminator(args, kwargs["state_dim"] + kwargs["state_dim"], 100)
+		else:
+			discr = gail.Discriminator(args, kwargs["state_dim"] + kwargs["action_dim"], 100)
 	
 	# Evaluate untrained policy
 	evaluations = [eval_policy(policy, args.env, args.seed)]
@@ -137,12 +145,12 @@ if __name__ == "__main__":
 	episode_timesteps = 0
 	episode_num = 0
 	max_eval_rewards = -1e3
-	horizon = 0
+	train_discri = 0
+	warm_start = True
 
 	for t in range(int(args.total_steps)):
 		
 		episode_timesteps += 1
-		horizon += 1
 
 		# Select action randomly or according to policy
 		if t < args.start_steps:
@@ -162,40 +170,34 @@ if __name__ == "__main__":
 
 		# Train agent after collecting sufficient data
 		if t >= args.start_steps:
-			if args.gail and horizon >= args.max_horizon:
-				horizon = 0
-				if args.states_only:
-					discr = gail.Discriminator(kwargs["state_dim"]+kwargs["state_dim"], 100, states_only=args.states_only)
-				else:
-					discr = gail.Discriminator(kwargs["state_dim"]+kwargs["action_dim"], 100, states_only=args.states_only)
+			if args.gail:
+				if (t+1) % args.max_horizon == 0:
+					train_discri += 1
+					warm_start = False if train_discri > 10 else True
+					discri_train_epoch = args.gail_prepoch if warm_start else args.gail_epoch
+					print(f"time_step:{t+1}, train discriminator:{train_discri}")
+					expert_losses, policy_losses, dis_losses, dis_gps, dis_total_losses = [], [], [], [], []
+					for _ in range(discri_train_epoch):
+						if args.wdail:
+							expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update_wdail(gail_train_loader, replay_buffer, warm_start)
+						else:
+							expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update(gail_train_loader, replay_buffer, warm_start)
 
-				file_name = os.path.join(args.gail_experts_dir, "trajs_{}.pt".format(args.env.split('-')[0].lower()))
+						expert_losses.append(expert_loss)
+						policy_losses.append(policy_loss)
+						dis_losses.append(dis_loss)
+						dis_gps.append(dis_gp)
+						dis_total_losses.append(dis_total_loss)
 
-				expert_dataset = gail.ExpertDataset(file_name, num_trajectories=args.num_trajs, subsample_frequency=args.subsample_frequency, states_only=args.states_only)
-				args.gail_batch_size = min(args.gail_batch_size, len(expert_dataset))
-				drop_last = len(expert_dataset) > args.gail_batch_size
-				gail_train_loader = torch.utils.data.DataLoader(dataset=expert_dataset, batch_size=args.gail_batch_size, shuffle=True, drop_last=drop_last)
+					writer.add_scalar("discriminator/expert_loss", np.mean(np.array(expert_losses)), t+1)
+					writer.add_scalar("discriminator/policy_loss", np.mean(np.array(policy_losses)), t+1)
+					writer.add_scalar("discriminator/dis_loss", np.mean(np.array(dis_losses)), t+1)
+					writer.add_scalar("discriminator/dis_gradient", np.mean(np.array(dis_gps)), t+1)
+					writer.add_scalar("discriminator/total_loss", np.mean(np.array(dis_total_losses)), t+1)
 
-				expert_losses, policy_losses, dis_losses, dis_gps, dis_total_losses = [], [], [], [], []
-				for _ in range(args.gail_epoch):
-					if args.wdail:
-						expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update_wdail(gail_train_loader, replay_buffer)
-					else:
-						expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update(gail_train_loader, replay_buffer)
-
-					expert_losses.append(expert_loss)
-					policy_losses.append(policy_loss)
-					dis_losses.append(dis_loss)
-					dis_gps.append(dis_gp)
-					dis_total_losses.append(dis_total_loss)
-
-				writer.add_scalar("discriminator/expert_loss", np.mean(np.array(expert_losses)), t+1)
-				writer.add_scalar("discriminator/policy_loss", np.mean(np.array(policy_losses)), t+1)
-				writer.add_scalar("discriminator/dis_loss", np.mean(np.array(dis_losses)), t+1)
-				writer.add_scalar("discriminator/dis_gradient", np.mean(np.array(dis_gps)), t+1)
-				writer.add_scalar("discriminator/total_loss", np.mean(np.array(dis_total_losses)), t+1)
-
-			policy.train(args, replay_buffer, discr)
+				policy.train(args, replay_buffer, writer, t+1, discr)
+			else:
+				policy.train(args, replay_buffer, writer, t+1)
 
 		writer.add_scalar("train/rewrad", episode_reward+1, t+1)
 		writer.add_scalar("train/path_length", episode_timesteps, t+1)
