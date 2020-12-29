@@ -7,10 +7,12 @@ from torch import autograd
 from baselines.common.running_mean_std import RunningMeanStd
 
 class Discriminator(nn.Module):
-    def __init__(self, input_dim, hidden_dim, states_only=False):
+    def __init__(self, args, input_dim, hidden_dim):
         super(Discriminator, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.states_only = states_only
+        self.args = args
+        self.states_only = self.args.states_only
+        self.pre_train = 0
 
         self.trunk = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1)).to(self.device)
         self.trunk.train()
@@ -47,7 +49,7 @@ class Discriminator(nn.Module):
         grad_pen = lambda_ * (grad.norm(2, dim=1) - 1).pow(2).mean()
         return grad_pen
 
-    def update(self, expert_loader, replay_buffer):
+    def update(self, expert_loader, replay_buffer, warm_start):
         self.train()
 
         loss = 0
@@ -57,6 +59,10 @@ class Discriminator(nn.Module):
         gp = 0
         n = 0
         JS_LOSS = 0
+        if warm_start:
+            self.pre_train += 1
+            print(f"warm start pretrain:{self.pre_train}")
+
         for expert_batch in expert_loader:
             states, actions, next_states, _, _ = replay_buffer.sample(batch_size=expert_loader.batch_size)
             if self.states_only:
