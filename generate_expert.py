@@ -4,9 +4,7 @@ import gym
 import argparse
 import os
 import shutil
-from tensorboardX import SummaryWriter
 
-import utils
 import TD3
 import OurDDPG
 import DDPG
