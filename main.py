@@ -199,7 +199,7 @@ if __name__ == "__main__":
 			else:
 				policy.train(args, replay_buffer, writer, t+1)
 
-		writer.add_scalar("train/rewrad", episode_reward+1, t+1)
+		writer.add_scalar("train/rewrad", episode_reward, t+1)
 		writer.add_scalar("train/path_length", episode_timesteps, t+1)
 
 		if done:
