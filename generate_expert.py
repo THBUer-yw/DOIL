@@ -15,10 +15,10 @@ import DDPG
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy", default="TD3")                  # Policy name (TD3, DDPG or OurDDPG)
-    parser.add_argument("--env", default="HalfCheetah-v2")          # OpenAI gym environment name
-    parser.add_argument("--seed", default=1979, type=int)              # Sets Gym, PyTorch and Numpy seeds
-    parser.add_argument("--eval_episodes", default=10, type=int)       # How often (time steps) we evaluate
+    parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
+    parser.add_argument("--env", default="Walker2d-v2", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=25169, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--eval_episodes", default=10, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
 
