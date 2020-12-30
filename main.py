@@ -43,7 +43,7 @@ if __name__ == "__main__":
 	parser.add_argument("--eval_freq", default=5e3, type=int, help="How often (time steps) we evaluate")
 	parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
-	parser.add_argument('--gail', default=False, help='do imitation learning with gail')
+	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
 	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=2, help='gail epochs (default: 5)')
@@ -124,9 +124,9 @@ if __name__ == "__main__":
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
 
-	if args.gail == True:
+	if args.gail:
 		file_name = os.path.join(args.gail_experts_dir, "trajs_{}.pt".format(args.env.split('-')[0].lower()))
-
+		print("Loading expert trajectory data!")
 		expert_dataset = gail.ExpertDataset(file_name, num_trajectories=args.num_trajs, subsample_frequency=args.subsample_frequency, states_only=args.states_only)
 		args.gail_batch_size = min(args.gail_batch_size, len(expert_dataset))
 		drop_last = len(expert_dataset) > args.gail_batch_size
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 		# Train agent after collecting sufficient data
 		if t >= args.start_steps:
-			if args.gail == True:
+			if args.gail:
 				if (t+1) % args.max_horizon == 0:
 					train_discri += 1
 					warm_start = False if train_discri > 10 else True
@@ -219,5 +219,8 @@ if __name__ == "__main__":
 			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
 			if mean_eval_rewards > max_eval_rewards and args.save_model:
 				max_eval_rewards = mean_eval_rewards
-				if args.gail == False:
+				if not args.gail:
+					print("***********************")
+					print("Saving model!")
+					print("***********************")
 					policy.save(f"./models/{file_name}")
