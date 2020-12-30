@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
 
-	if args.gail:
+	if args.gail == True:
 		file_name = os.path.join(args.gail_experts_dir, "trajs_{}.pt".format(args.env.split('-')[0].lower()))
 
 		expert_dataset = gail.ExpertDataset(file_name, num_trajectories=args.num_trajs, subsample_frequency=args.subsample_frequency, states_only=args.states_only)
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 		# Train agent after collecting sufficient data
 		if t >= args.start_steps:
-			if args.gail:
+			if args.gail == True:
 				if (t+1) % args.max_horizon == 0:
 					train_discri += 1
 					warm_start = False if train_discri > 10 else True
