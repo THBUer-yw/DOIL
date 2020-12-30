@@ -9,14 +9,15 @@ import TD3
 import OurDDPG
 import DDPG
 
+# ant 5825.0 115.6 halfcheetah 11049.1 136.2 hopper 3707.3 11.8 reacher -3.8 1.8 walker2d 4729.4 23.0
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
     parser.add_argument("--env", default="Walker2d-v2", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=25169, type=int, help="Sets Gym, PyTorch and Numpy seeds")
-    parser.add_argument("--eval_episodes", default=10, type=int, help="How often (time steps) we evaluate")
+    parser.add_argument("--seed", default=32653, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
 
@@ -48,11 +49,8 @@ if __name__ == "__main__":
     policy.load(f"./models/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
-    if os.path.exists("./gail_experts/"):
-        shutil.rmtree("./gail_experts/")
-    os.makedirs("./gail_experts/")
 
-    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2" or "Humanoid-v2":
+    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2":
         max_lengh = 1000
     if args.env == "Reacher-v2":
         max_lengh = 50
