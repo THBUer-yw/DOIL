@@ -10,13 +10,14 @@ import OurDDPG
 import DDPG
 
 # ant 5825.0 115.6 halfcheetah 11049.1 136.2 hopper 3707.3 11.8 reacher -3.8 1.8 walker2d 4729.4 23.0
+# InvertedDoublePendulum 9359.8 0.1
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="Walker2d-v2", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=32653, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--env", default="InvertedDoublePendulum-v2", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
-    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2":
+    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2" or "InvertedDoublePendulum-v2":
         max_lengh = 1000
     if args.env == "Reacher-v2":
         max_lengh = 50
@@ -75,6 +76,7 @@ if __name__ == "__main__":
             actions[i][path_length] = torch.tensor(action)
 
             state, reward, done, _ = env.step(action)
+            # env.render()
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
