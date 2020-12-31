@@ -41,6 +41,7 @@ if __name__ == "__main__":
 	parser.add_argument("--batch_size", default=256, type=int, help="Batch size for both actor and critic")
 	parser.add_argument("--discount", default=0.99, help="Discount factor")
 	parser.add_argument("--eval_freq", default=5e3, type=int, help="How often (time steps) we evaluate")
+	parser.add_argument("--eval_episodes", default=10, type=int, help="How many episodes for each evaluation")
 	parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
 	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
@@ -85,7 +86,7 @@ if __name__ == "__main__":
 	if os.path.exists("./results/" + log_save_name):
 		shutil.rmtree("./results/" + log_save_name)
 	os.makedirs("./results/" + log_save_name)
-	log_file = os.path.join("./results/" + log_save_name, "train_log.txt")
+	log_file = os.path.join("./results/" + log_save_name, "eval_log.txt")
 
 	env = gym.make(args.env)
 	# Set seeds
@@ -214,9 +215,11 @@ if __name__ == "__main__":
 		# Evaluate episode
 		if (t + 1) % args.eval_freq == 0:
 			file_name = args.env+"_"+"seed_"+str(args.seed)
-			mean_eval_rewards = eval_policy(policy, args.env, args.seed)
+			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes)
 			writer.add_scalar("eval/mean_reward", mean_eval_rewards, t+1)
 			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
+			with open(log_file, "a") as file:
+				print("mean eval reward on {} episodes: {}, steps {}".format(args.eval_episodes, mean_eval_rewards, t+1), file=file)
 			if mean_eval_rewards > max_eval_rewards and args.save_model:
 				max_eval_rewards = mean_eval_rewards
 				if not args.gail:
