@@ -16,9 +16,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="InvertedDoublePendulum-v2", help="OpenAI gym environment name")
+    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
     parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
-    parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
+    parser.add_argument("--eval_episodes", default=10, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             actions[i][path_length] = torch.tensor(action)
 
             state, reward, done, _ = env.step(action)
-            # env.render()
+            env.render()
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
