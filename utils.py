@@ -86,9 +86,10 @@ class LearningRate:
 
 def Log_save_name4gail(args):
 	time_str = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-	save_name = args.env + '_gail_{}_seed_{}_total_steps_{}_num_trajs_{}_subsample_frequency_{}_gail_epoch_{}_max_horizon_{}_start_steps_{}_' \
+	save_name = args.env + '_algo_{}_gail_{}_seed_{}_total_steps_{}_num_trajs_{}_subsample_frequency_{}_gail_epoch_{}_max_horizon_{}_start_steps_{}_' \
                                 'wdail_{}_states_only_{}_reward_type_{}'\
-                    .format(args.gail,
+                    .format(args.policy,
+							args.gail,
 							args.seed,
                             args.total_steps,
                             args.num_trajs,
