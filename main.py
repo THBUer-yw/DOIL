@@ -66,6 +66,7 @@ if __name__ == "__main__":
 	parser.add_argument("--tau", default=0.005, help="Target network update rate")
 	parser.add_argument("--use_lr_decay", default=False, help="decay the learning rate for optimizer")
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
+	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
 
 	if not os.path.exists("./results"):
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 			if args.gail:
 				if (t+1) % args.max_horizon == 0:
 					train_discri += 1
-					warm_start = False if train_discri > 10 else True
+					warm_start = False if train_discri > args.warm_times else True
 					discri_train_epoch = args.gail_prepoch if warm_start else args.gail_epoch
 					print(f"time_step:{t+1}, train discriminator:{train_discri}")
 					expert_losses, policy_losses, dis_losses, dis_gps, dis_total_losses = [], [], [], [], []
