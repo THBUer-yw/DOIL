@@ -42,7 +42,7 @@ if __name__ == "__main__":
 	parser.add_argument("--discount", default=0.99, help="Discount factor")
 	parser.add_argument("--eval_freq", default=5e3, type=int, help="How often (time steps) we evaluate")
 	parser.add_argument("--eval_episodes", default=10, type=int, help="How many episodes for each evaluation")
-	parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
+	parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
 	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
