@@ -145,18 +145,18 @@ class Discriminator(nn.Module):
             s = torch.sigmoid(d)
 
             # If traditional GAIL
-            if reward_type == 1:  # Logarithmic function
-                reward = - (1 - s).log()
-            elif reward_type == 2:  # Logarithmic function
-                reward = s.log()
-            elif reward_type == 3:  # Linear function
+            if reward_type == 1:  # Original function
                 reward = s.log() - (1 - s).log()
-            elif reward_type == 4:  # Sigmode function
+            elif reward_type == 2:  # Linear function
                 reward = s
+            elif reward_type == 3:  # Logarithmic function
+                reward = - (1 - s).log()
+            elif reward_type == 4:  # Logarithmic function
+                reward = s.log()
             elif reward_type == 5:  # Exponential function
-              reward = torch.exp(d)
+                reward = torch.exp(s)
             elif reward_type == 6:  # Inverse proportional function
-                reward = -torch.exp(-d)
+                reward = -1 / (s + 1e-8)
             elif reward_type == 7:  # Power function
                 reward = torch.pow(s, 2)
             elif reward_type == 8:  # Power function
