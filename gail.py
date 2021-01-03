@@ -51,7 +51,6 @@ class Discriminator(nn.Module):
 
     def update(self, expert_loader, replay_buffer, warm_start):
         self.train()
-
         loss = 0
         e_loss = 0
         p_loss = 0

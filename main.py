@@ -40,11 +40,12 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--batch_size", default=256, type=int, help="Batch size for both actor and critic")
 	parser.add_argument("--discount", default=0.99, help="Discount factor")
+	parser.add_argument("--decay_steps", default=1e5, help="Discount factor")
 	parser.add_argument("--eval_freq", default=5e3, type=int, help="How often (time steps) we evaluate")
 	parser.add_argument("--eval_episodes", default=10, type=int, help="How many episodes for each evaluation")
 	parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
-	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
+	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
 	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=2, help='gail epochs (default: 5)')
@@ -56,7 +57,7 @@ if __name__ == "__main__":
 	parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
 	parser.add_argument("--policy_noise", default=0.2, help="Noise added to target policy during critic update")
 	parser.add_argument("--policy_freq", default=2, type=int, help="Frequency of delayed policy updates")
-	parser.add_argument("--reward_type", type=int, default=1, help="different types of rewards")
+	parser.add_argument("--reward_type", type=int, default=3, help="different types of rewards")
 	parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
 	parser.add_argument("--start_steps", default=2e4, type=int, help="Time steps initial random policy is used")
 	parser.add_argument("--save_model", default=True, action="store_true", help="Save model and optimizer parameters")
@@ -64,7 +65,7 @@ if __name__ == "__main__":
 	parser.add_argument('--subsample_frequency', help='subsample for each trajectory', type=int, default=1)
 	parser.add_argument("--total_steps", default=1e6, type=int, help="Max time steps to run environment")
 	parser.add_argument("--tau", default=0.005, help="Target network update rate")
-	parser.add_argument("--use_lr_decay", default=False, help="decay the learning rate for optimizer")
+	parser.add_argument("--use_lr_decay", type=int, default=0, help="decay the learning rate for optimizer")
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
 	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
@@ -94,11 +95,6 @@ if __name__ == "__main__":
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
-
-	if args.use_lr_decay:
-		lr = utils.LearningRate.get_instance()
-		lr.lr = 10 ** (-3)
-		lr.decay_factor = 0.5
 	
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0] 
