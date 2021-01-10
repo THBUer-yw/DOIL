@@ -15,7 +15,7 @@ import gail
 
 # Runs policy for X episodes and returns average reward
 # A fixed seed is used for the eval environment
-def eval_policy(policy, env_name, seed, eval_episodes=10):
+def eval_policy(policy, env_name, seed, eval_episodes, steps):
 	eval_env = gym.make(env_name)
 	eval_env.seed(seed + 100)
 
@@ -30,7 +30,7 @@ def eval_policy(policy, env_name, seed, eval_episodes=10):
 	avg_reward /= eval_episodes
 
 	print("---------------------------------------")
-	print(f"env:{env_name}, evaluation over last {eval_episodes} episodes: {avg_reward:.1f}")
+	print(f"env:{env_name},train_steps:{steps},evaluation over last {eval_episodes} episodes:{avg_reward:.1f}")
 	print("---------------------------------------")
 	return avg_reward
 
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 		# Evaluate episode
 		if (t + 1) % args.eval_freq == 0:
 			file_name = args.env+"_"+"seed_"+str(args.seed)
-			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes)
+			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes, steps=t+1)
 			writer.add_scalar("eval/mean_reward", mean_eval_rewards, t+1)
 			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
 			with open(log_file, "a") as file:
