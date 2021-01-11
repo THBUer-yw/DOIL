@@ -6,7 +6,9 @@ import seaborn as sns
 from collections import deque
 import numpy as np
 
-select_method_names = ['GAIL']
+select_method_names = ['epoch_50_prepoch_50', 'epoch_50_prepoch_100', 'epoch_50_prepoch_200', 'epoch_100_prepoch_50',
+                       'epoch_100_prepoch_100', 'epoch_100_prepoch_200', 'epoch_200_prepoch_50', 'epoch_200_prepoch_100',
+                       'epoch_200_prepoch_200']
 
 def get_filename_dict(base_dir):
     file_name = []
@@ -15,6 +17,7 @@ def get_filename_dict(base_dir):
     file_name_walker2d = []
     file_name_ant = []
     file_name_reacher = []
+    file_name_bipedalwalker = []
     for dir in os.listdir(base_dir):
         filename_dict = {}
         if os.path.isdir(os.path.join(base_dir, dir)):
@@ -29,9 +32,11 @@ def get_filename_dict(base_dir):
             # elif bcgail and not wdail:
             #     method = "BCGAIL"
             # method = method + "-states-only" if states_only else method
-            method = "GAIL"
+            gail_epoch = element[18]
+            pre_epoch = element[20]
+            method = "epoch_"+gail_epoch+"_prepoch_"+pre_epoch
             env = element[0]
-            seed = int(element[4])
+            seed = int(element[6])
             filename_dict.setdefault(method, []).append({"seed": seed, "env": env, "path": os.path.join(base_dir, dir, "eval_log.txt")})
             if env == "Hopper-v2":
                 file_name_hopper.append(filename_dict)
@@ -43,11 +48,14 @@ def get_filename_dict(base_dir):
                 file_name_ant.append(filename_dict)
             elif env == "Reacher-v2":
                 file_name_reacher.append(filename_dict)
-    file_name.append(file_name_hopper)
-    file_name.append(file_name_halfcheetah)
+            elif env == "BipedalWalker-v3":
+                file_name_bipedalwalker.append(filename_dict)
+    # file_name.append(file_name_hopper)
+    # file_name.append(file_name_halfcheetah)
     file_name.append(file_name_walker2d)
-    file_name.append(file_name_ant)
-    file_name.append(file_name_reacher)
+    # file_name.append(file_name_ant)
+    # file_name.append(file_name_reacher)
+    # file_name.append(file_name_bipedalwalker)
     return file_name
 
 
@@ -65,7 +73,7 @@ def plot(logdir):
             for method, filepath_list in element.items():
                 if method in select_method_names:
                     for path_dic in filepath_list:
-                        slidwin = deque(maxlen=10)
+                        slidwin = deque(maxlen=20)
                         seed = path_dic["seed"]
                         logpath = path_dic["path"]
                         env = path_dic["env"]
@@ -88,13 +96,15 @@ def plot(logdir):
         print(df)
         os.makedirs(r"./plot_basic", exist_ok=True)
         # df_save.to_csv("./plot_basic/{}.csv".format(env + "_" + "basic"))
-        palette = sns.color_palette("deep", 1)
+        palette = sns.color_palette("deep", 9)
         # palette = sns.hls_palette(4, l=.3, s=.8)
 
-        g = sns.lineplot(x=df.step, y="reward", data=df, hue="method", style="method", dashes=False, palette=palette, hue_order=['GAIL'])
+        g = sns.lineplot(x=df.step, y="reward", data=df, hue="method", style="method", dashes=False, palette=palette, hue_order=['epoch_50_prepoch_50', 'epoch_50_prepoch_100', 'epoch_50_prepoch_200', 'epoch_100_prepoch_50',
+                       'epoch_100_prepoch_100', 'epoch_100_prepoch_200', 'epoch_200_prepoch_50', 'epoch_200_prepoch_100',
+                       'epoch_200_prepoch_200'])
         plt.tight_layout()
-        if env != "Ant-v2":
-            ax.legend_.remove()
+        # if env != "Ant-v2":
+        #     ax.legend_.remove()
         fig.savefig("./plot_basic/{}.png".format(env + "_" + "basic"), bbox_inches='tight')
         # plt.show()
 

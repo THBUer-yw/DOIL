@@ -122,7 +122,7 @@ if __name__ == "__main__":
 	elif args.policy == "DDPG":
 		policy = DDPG.DDPG(**kwargs)
 
-	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
+	replay_buffer = utils.ReplayBuffer(state_dim, action_dim, args)
 
 	if args.gail:
 		file_name = os.path.join(args.gail_experts_dir, "trajs_{}.pt".format(args.env.split('-')[0].lower()))
