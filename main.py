@@ -66,7 +66,7 @@ if __name__ == "__main__":
 	parser.add_argument("--total_steps", default=1e6, type=int, help="Max time steps to run environment")
 	parser.add_argument("--tau", default=0.005, help="Target network update rate")
 	parser.add_argument("--use_lr_decay", type=int, default=0, help="decay the learning rate for optimizer")
-	parser.add_argument("--use_cuda", type=int, default=0, help="whether use GPU")
+	parser.add_argument("--use_cuda", type=int, default=1, help="whether use GPU")
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
 	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
