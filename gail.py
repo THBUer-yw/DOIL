@@ -9,7 +9,7 @@ from baselines.common.running_mean_std import RunningMeanStd
 class Discriminator(nn.Module):
     def __init__(self, args, input_dim, hidden_dim):
         super(Discriminator, self).__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() and args.use_cuda else "cpu")
         self.args = args
         self.states_only = self.args.states_only
         self.pre_train = 0
