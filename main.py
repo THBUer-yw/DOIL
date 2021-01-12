@@ -218,7 +218,7 @@ if __name__ == "__main__":
 			writer.add_scalar("eval/mean_reward", mean_eval_rewards, t+1)
 			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
 			with open(log_file, "a") as file:
-				print("mean eval reward on {} episodes: {}, steps {}".format(args.eval_episodes, mean_eval_rewards, t+1), file=file)
+				print("train_step:{}, evaluation using {} episodes, mean reward {:.2f}".format(t+1, args.eval_episodes, mean_eval_rewards), file=file)
 			if mean_eval_rewards > max_eval_rewards and args.save_model:
 				max_eval_rewards = mean_eval_rewards
 				if not args.gail:
