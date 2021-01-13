@@ -206,7 +206,7 @@ if __name__ == "__main__":
 		# Evaluate episode
 		if (t + 1) % args.eval_freq == 0:
 			file_name = args.env+"_"+"seed_"+str(args.seed)
-			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes, steps=t+1)
+			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes)
 			end_time = time.time()
 			fps = (t+1)/(end_time-start_time)
 			print(f"env:{args.env},train_steps:{t+1},**FPS**:{fps:.0f},evaluation over last {args.eval_episodes} episodes:{mean_eval_rewards:.1f}\n")
