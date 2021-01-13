@@ -60,7 +60,7 @@ class Discriminator(nn.Module):
         JS_LOSS = 0
         if warm_start:
             self.pre_train += 1
-            print(f"warm start pretrain:{self.pre_train}")
+            # print(f"warm start pretrain:{self.pre_train}")
 
         for expert_batch in expert_loader:
             states, actions, next_states, _, _ = replay_buffer.sample(batch_size=expert_loader.batch_size)
