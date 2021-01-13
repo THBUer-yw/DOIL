@@ -68,6 +68,8 @@ if __name__ == "__main__":
 	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
 
+	if os.path.exists("./results"):
+		shutil.rmtree("./results")
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
 
@@ -83,8 +85,6 @@ if __name__ == "__main__":
 		shutil.rmtree(log_save_path)
 
 	writer = SummaryWriter(log_save_path)
-	if os.path.exists("./results"):
-		shutil.rmtree("./results")
 	if os.path.exists("./results/" + log_save_name):
 		shutil.rmtree("./results/" + log_save_name)
 	os.makedirs("./results/" + log_save_name)
