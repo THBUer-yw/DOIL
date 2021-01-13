@@ -3,7 +3,7 @@ import torch
 import gym
 import argparse
 import os
-import shutil
+import time
 
 import TD3
 import OurDDPG
@@ -16,8 +16,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--env", default="Reacher-v2", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=21445, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=10, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
@@ -34,7 +34,8 @@ if __name__ == "__main__":
     kwargs = {
         "state_dim": state_dim,
         "action_dim": action_dim,
-        "max_action": max_action
+        "max_action": max_action,
+        "use_cuda": False
     }
 
     if args.policy == "TD3":
@@ -77,6 +78,7 @@ if __name__ == "__main__":
 
             state, reward, done, _ = env.step(action)
             env.render()
+            time.sleep(0.02)
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
