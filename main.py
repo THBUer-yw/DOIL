@@ -137,7 +137,7 @@ if __name__ == "__main__":
 			discr = gail.Discriminator(args, kwargs["state_dim"] + kwargs["action_dim"], 100)
 	
 	# Evaluate untrained policy
-	evaluations = [eval_policy(policy, args.env, args.seed, args.eval_episodes, 1)]
+	evaluations = [eval_policy(policy, args.env, args.seed, args.eval_episodes)]
 
 	state, done = env.reset(), False
 	episode_reward = 0
