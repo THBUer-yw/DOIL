@@ -16,7 +16,7 @@ import gail
 
 # Runs policy for X episodes and returns average reward
 # A fixed seed is used for the eval environment
-def eval_policy(policy, env_name, seed, eval_episodes, steps):
+def eval_policy(policy, env_name, seed, eval_episodes):
 	eval_env = gym.make(env_name)
 	eval_env.seed(seed + 100)
 
@@ -39,10 +39,10 @@ if __name__ == "__main__":
 	parser.add_argument("--discount", default=0.99, help="Discount factor")
 	parser.add_argument("--decay_steps", default=1e5, help="Discount factor")
 	parser.add_argument("--eval_freq", default=3e3, type=int, help="How often (time steps) we evaluate")
-	parser.add_argument("--eval_episodes", default=10, type=int, help="How many episodes for each evaluation")
-	parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
+	parser.add_argument("--eval_episodes", default=5, type=int, help="How many episodes for each evaluation")
+	parser.add_argument("--env", default="Ant-v2", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
-	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
+	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
 	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
 	if os.path.exists("./results"):
 		shutil.rmtree("./results")
-	if not os.path.exists("./results"):
-		os.makedirs("./results")
+
+	os.makedirs("./results")
 
 	if args.save_model and not os.path.exists("./models"):
 		os.makedirs("./models")
@@ -142,7 +142,6 @@ if __name__ == "__main__":
 	state, done = env.reset(), False
 	episode_reward = 0
 	episode_timesteps = 0
-	episode_num = 0
 	max_eval_rewards = -1e3
 	train_discri = 0
 	warm_start = True
@@ -176,21 +175,17 @@ if __name__ == "__main__":
 					warm_start = False if train_discri > args.warm_times else True
 					discri_train_epoch = args.gail_prepoch if warm_start else args.gail_epoch
 					print(f"time_step:{t+1}, train discriminator:{train_discri}\n")
-					expert_losses, policy_losses, dis_losses, dis_gps, dis_total_losses = [], [], [], [], []
+					dis_losses, dis_gps, dis_total_losses = [], [], []
 					for _ in range(discri_train_epoch):
 						if args.wdail:
-							expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update_wdail(gail_train_loader, replay_buffer, warm_start)
+							_, _, dis_loss, dis_gp, dis_total_loss = discr.update_wdail(gail_train_loader, replay_buffer, warm_start)
 						else:
-							expert_loss, policy_loss, dis_loss, dis_gp, dis_total_loss = discr.update(gail_train_loader, replay_buffer, warm_start)
+							_, _, dis_loss, dis_gp, dis_total_loss = discr.update(gail_train_loader, replay_buffer, warm_start)
 
-						expert_losses.append(expert_loss)
-						policy_losses.append(policy_loss)
 						dis_losses.append(dis_loss)
 						dis_gps.append(dis_gp)
 						dis_total_losses.append(dis_total_loss)
 
-					writer.add_scalar("discriminator/expert_loss", np.mean(np.array(expert_losses)), t+1)
-					writer.add_scalar("discriminator/policy_loss", np.mean(np.array(policy_losses)), t+1)
 					writer.add_scalar("discriminator/dis_loss", np.mean(np.array(dis_losses)), t+1)
 					writer.add_scalar("discriminator/dis_gradient", np.mean(np.array(dis_gps)), t+1)
 					writer.add_scalar("discriminator/total_loss", np.mean(np.array(dis_total_losses)), t+1)
@@ -200,26 +195,22 @@ if __name__ == "__main__":
 				policy.train(args, replay_buffer, writer, t+1)
 
 		writer.add_scalar("train/rewrad", episode_reward, t+1)
-		writer.add_scalar("train/path_length", episode_timesteps, t+1)
 
 		if done:
 			# +1 to account for 0 indexing. +0 on ep_timesteps since it will increment +1 even if done=True
-			# print(f"env:{args.env}, current steps: {t+1}, path_len: {episode_timesteps}, reward: {episode_reward:.1f}")
 			# Reset environment
 			state, done = env.reset(), False
 			episode_reward = 0
 			episode_timesteps = 0
-			episode_num += 1 
 
 		# Evaluate episode
 		if (t + 1) % args.eval_freq == 0:
-			end_time = time.time()
-			fps = (t+1)/(end_time-start_time)
 			file_name = args.env+"_"+"seed_"+str(args.seed)
 			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes, steps=t+1)
+			end_time = time.time()
+			fps = (t+1)/(end_time-start_time)
 			print(f"env:{args.env},train_steps:{t+1},**FPS**:{fps:.0f},evaluation over last {args.eval_episodes} episodes:{mean_eval_rewards:.1f}\n")
 			writer.add_scalar("eval/mean_reward", mean_eval_rewards, t+1)
-			writer.add_scalar("eval/max_eval_reward", max_eval_rewards, t+1)
 			with open(log_file, "a") as file:
 				print("train_step:{}, evaluation using {} episodes, mean reward {:.2f}".format(t+1, args.eval_episodes, mean_eval_rewards), file=file)
 			if mean_eval_rewards > max_eval_rewards and args.save_model:

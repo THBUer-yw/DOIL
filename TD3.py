@@ -118,7 +118,6 @@ class TD3(object):
 		self.critic_optimizer.zero_grad()
 		critic_loss.backward()
 		self.critic_optimizer.step()
-		writer.add_scalar("train/value_loss", critic_loss, steps)
 
 		# Delayed policy updates
 		if self.total_it % self.policy_freq == 0:
@@ -130,7 +129,6 @@ class TD3(object):
 			self.actor_optimizer.zero_grad()
 			actor_loss.backward()
 			self.actor_optimizer.step()
-			writer.add_scalar("train/actor_loss", actor_loss, steps)
 
 			# Update the frozen target models
 			for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
