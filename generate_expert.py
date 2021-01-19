@@ -10,15 +10,15 @@ import OurDDPG
 import DDPG
 
 # ant 5825.0 115.6 halfcheetah 11049.1 136.2 hopper 3707.3 11.8 reacher -3.8 1.8 walker2d 4729.4 23.0
-# InvertedDoublePendulum 9359.8 0.1
+# InvertedDoublePendulum 9359.8 0.1 bipedalwalker 295.4 1.2
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="Reacher-v2", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=21445, type=int, help="Sets Gym, PyTorch and Numpy seeds")
-    parser.add_argument("--eval_episodes", default=10, type=int, help="How often (time steps) we evaluate")
+    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
     args = parser.parse_args()
 
 
@@ -77,8 +77,8 @@ if __name__ == "__main__":
             actions[i][path_length] = torch.tensor(action)
 
             state, reward, done, _ = env.step(action)
-            env.render()
-            time.sleep(0.02)
+            # env.render()
+            # time.sleep(0.02)
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
