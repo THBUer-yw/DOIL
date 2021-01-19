@@ -9,6 +9,7 @@ from tensorboardX import SummaryWriter
 
 import utils
 import TD3
+import Dense_TD3
 import OurDDPG
 import DDPG
 import gail
@@ -40,9 +41,9 @@ if __name__ == "__main__":
 	parser.add_argument("--decay_steps", default=1e5, help="Discount factor")
 	parser.add_argument("--eval_freq", default=3e3, type=int, help="How often (time steps) we evaluate")
 	parser.add_argument("--eval_episodes", default=5, type=int, help="How many episodes for each evaluation")
-	parser.add_argument("--env", default="Ant-v2", help="OpenAI gym environment name")
+	parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
-	parser.add_argument('--gail', type=int, default=0, help='do imitation learning with gail')
+	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
 	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
@@ -64,17 +65,16 @@ if __name__ == "__main__":
 	parser.add_argument("--tau", default=0.005, help="Target network update rate")
 	parser.add_argument("--use_lr_decay", type=int, default=0, help="decay the learning rate for optimizer")
 	parser.add_argument("--use_cuda", type=int, default=1, help="whether use GPU")
+	parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
 	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
 
-	if os.path.exists("./results"):
-		shutil.rmtree("./results")
+	if not os.path.exists("./results"):
+		os.makedirs("./results")
 
-	os.makedirs("./results")
-
-	if args.save_model and not os.path.exists("./models"):
-		os.makedirs("./models")
+	# if args.save_model and not os.path.exists("./models"):
+	# 	os.makedirs("./models")
 
 	if args.gail:
 		log_save_name = utils.Log_save_name4gail(args)
@@ -115,7 +115,12 @@ if __name__ == "__main__":
 		kwargs["noise_clip"] = args.noise_clip * max_action
 		kwargs["policy_freq"] = args.policy_freq
 		kwargs["use_cuda"] = args.use_cuda
-		policy = TD3.TD3(**kwargs)
+		if args.use_dense_network:
+			policy = Dense_TD3.TD3(**kwargs)
+			print("Using the dense net!")
+		else:
+			policy = TD3.TD3(**kwargs)
+			print("Using the MLP!")
 	elif args.policy == "OurDDPG":
 		policy = OurDDPG.DDPG(**kwargs)
 	elif args.policy == "DDPG":
