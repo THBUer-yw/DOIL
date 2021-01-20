@@ -95,23 +95,27 @@ class Discriminator(nn.Module):
 
         return e_loss / n, p_loss / n, JS_LOSS / n, gp / n, loss / n
 
-    def update_wdail(self, expert_loader, replay_buffer):
+    def update_wdail(self, expert_loader, replay_buffer, warm_start):
         self.train()
-        states, actions, next_states, _, _ = replay_buffer.sample(batch_size=expert_loader.batch_size)
-
         loss = 0
         g_loss =0.0
         gp =0.0
         n = 0
         e_loss = 0
         p_loss = 0
+
+        if warm_start:
+            self.pre_train += 1
+            # print(f"warm start pretrain:{self.pre_train}")
+
         for expert_batch in expert_loader:
+            states, actions, next_states, _, _ = replay_buffer.sample(batch_size=expert_loader.batch_size)
             if self.states_only:
                 policy_state, policy_action = states, next_states
             else:
                 policy_state, policy_action = states, actions
 
-            policy_d = self.trunk( torch.cat([policy_state, policy_action], dim=1))
+            policy_d = self.trunk(torch.cat([policy_state, policy_action], dim=1))
 
             expert_state, expert_action = expert_batch
             expert_state = torch.FloatTensor(expert_state).to(self.device)
