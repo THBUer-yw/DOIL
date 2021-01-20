@@ -108,15 +108,13 @@ def Log_save_name4gail(args):
 
 def Log_save_name4td3(args):
 	time_str = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-	save_name = args.env + '_gail_{}_seed_{}_total_steps_{}_start_steps_{}_eval_freq_{}_expl_noise_{}_gamma_{}_tau_{}_policy_freq_{}' .format(
-							args.gail,
-							args.seed,
-                            args.total_steps,
-                            args.start_steps,
-                            args.eval_freq,
-                            args.expl_noise,
-                            args.discount,
-                            args.tau,
-                            args.policy_freq
-                            ) + "_" + time_str
+	save_name = args.env + '_algo_{}_gail_{}_seed_{}_total_steps_{}_max_horizon_{}_start_steps_{}_use_dense_{}' \
+		.format(args.policy,
+				args.gail,
+				args.seed,
+				args.total_steps,
+				args.max_horizon,
+				args.start_steps,
+				args.use_dense_network,
+				) + "_" + time_str
 	return save_name
