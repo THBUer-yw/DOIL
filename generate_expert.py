@@ -6,19 +6,23 @@ import os
 import time
 
 import TD3
+import Dense_TD3
 import OurDDPG
 import DDPG
 
 # ant 5825.0 115.6 halfcheetah 11049.1 136.2 hopper 3707.3 11.8 reacher -3.8 1.8 walker2d 4729.4 23.0
 # InvertedDoublePendulum 9359.8 0.1 bipedalwalker 295.4 1.2
 
+# ant 6405.6 221.6  halfcheetah 14053.2 100.9 hopper 3776.9 26.4 walker2d 4806.8 12.4
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--env", default="Ant-v2", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=26187, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
+    parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
     args = parser.parse_args()
 
 
@@ -40,7 +44,12 @@ if __name__ == "__main__":
 
     if args.policy == "TD3":
         # Target policy smoothing is scaled wrt the action scale
-        policy = TD3.TD3(**kwargs)
+        if args.use_dense_network:
+            policy = Dense_TD3.TD3(**kwargs)
+            print("Using the dense net!")
+        else:
+            policy = TD3.TD3(**kwargs)
+            print("Using the MLP!")
     elif args.policy == "OurDDPG":
         policy = OurDDPG.DDPG(**kwargs)
     elif args.policy == "DDPG":
@@ -48,7 +57,7 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model_file_name = args.env+"_"+"seed_"+str(args.seed)
-    policy.load(f"./models/{model_file_name}", device)
+    policy.load(f"./models_dense/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
