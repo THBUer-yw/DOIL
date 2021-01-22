@@ -45,7 +45,7 @@ if __name__ == "__main__":
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
 	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
-	parser.add_argument('--gail_experts-dir', default='./gail_experts', help='directory that contains expert demonstrations for gail')
+	parser.add_argument('--gail_experts-dir', default='./gail_experts_dense', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
 	parser.add_argument('--gail_prepoch', type=int, default=100, help='gail prepochs (default: 50)')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
@@ -73,8 +73,8 @@ if __name__ == "__main__":
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
 
-	# if args.save_model and not os.path.exists("./models"):
-	# 	os.makedirs("./models")
+	if args.save_model and not os.path.exists("./models"):
+		os.makedirs("./models")
 
 	if args.gail:
 		log_save_name = utils.Log_save_name4gail(args)
