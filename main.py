@@ -45,7 +45,7 @@ if __name__ == "__main__":
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
 	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
-	parser.add_argument('--gail_experts-dir', default='./gail_experts_dense', help='directory that contains expert demonstrations for gail')
+	parser.add_argument('--gail_experts-dir', default='./gail_experts_mlp', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
 	parser.add_argument('--gail_prepoch', type=int, default=100, help='gail prepochs (default: 50)')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 	parser.add_argument("--tau", default=0.005, help="Target network update rate")
 	parser.add_argument("--use_lr_decay", type=int, default=0, help="decay the learning rate for optimizer")
 	parser.add_argument("--use_cuda", type=int, default=1, help="whether use GPU")
-	parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
+	parser.add_argument("--use_dense_network", type=int, default=0, help="whether use densenet")
 	parser.add_argument("--wdail", type=int, default=0, help="train the agent with wdail method")
 	parser.add_argument("--warm_times", type=int, default=10, help="warm times for the discriminator")
 	args = parser.parse_args()
@@ -73,8 +73,8 @@ if __name__ == "__main__":
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
 
-	if args.save_model and not os.path.exists("./models"):
-		os.makedirs("./models")
+	# if args.save_model and not os.path.exists("./models"):
+	# 	os.makedirs("./models")
 
 	if args.gail:
 		log_save_name = utils.Log_save_name4gail(args)
