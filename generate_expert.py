@@ -19,10 +19,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="Ant-v2", help="OpenAI gym environment name")
-    parser.add_argument("--seed", default=26187, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
+    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
     parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
+    parser.add_argument("--random", default=1, type=int, help="evaluate the random policy")
     args = parser.parse_args()
 
 
@@ -57,7 +58,8 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model_file_name = args.env+"_"+"seed_"+str(args.seed)
-    policy.load(f"./models_dense/{model_file_name}", device)
+    if not args.random:
+        policy.load(f"./models_dense/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
@@ -80,7 +82,10 @@ if __name__ == "__main__":
         path_length = 0
         path_reward = 0
         while not done:
-            action = policy.select_action(np.array(state))
+            if args.random:
+                action = env.action_space.sample()
+            else:
+                action = policy.select_action(np.array(state))
 
             states[i][path_length] = torch.tensor(state)
             actions[i][path_length] = torch.tensor(action)
