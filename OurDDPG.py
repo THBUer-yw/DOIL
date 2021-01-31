@@ -62,10 +62,12 @@ class DDPG(object):
 		return self.actor(state).cpu().data.numpy().flatten()
 
 
-	def train(self, replay_buffer, batch_size=100):
+	def train(self, args, replay_buffer, writer, steps, gail=None):
 		# Sample replay buffer 
-		state, action, next_state, reward, not_done = replay_buffer.sample(batch_size)
-
+		state, action, next_state, reward, not_done = replay_buffer.sample(batch_size=100)
+		if gail:
+			reward = gail.predict_reward(state, action, args.discount, not_done, args.reward_type)
+			writer.add_scalar("discriminator/gail_reward", np.mean(np.array(reward.to("cpu")), axis=0), steps)
 		# Compute the target Q value
 		target_Q = self.critic_target(next_state, self.actor_target(next_state))
 		target_Q = reward + (not_done * self.discount * target_Q).detach()
