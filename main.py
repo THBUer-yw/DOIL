@@ -10,8 +10,6 @@ from tensorboardX import SummaryWriter
 import utils
 import TD3
 import Dense_TD3
-import OurDDPG
-import DDPG
 import gail
 
 
@@ -73,8 +71,8 @@ if __name__ == "__main__":
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
 
-	# if args.save_model and not os.path.exists("./models"):
-	# 	os.makedirs("./models")
+	if args.save_model and not os.path.exists("./models"):
+		os.makedirs("./models")
 
 	if args.gail:
 		log_save_name = utils.Log_save_name4gail(args)
@@ -121,10 +119,6 @@ if __name__ == "__main__":
 		else:
 			policy = TD3.TD3(**kwargs)
 			print("Using the MLP!")
-	elif args.policy == "OurDDPG":
-		policy = OurDDPG.DDPG(**kwargs)
-	elif args.policy == "DDPG":
-		policy = DDPG.DDPG(**kwargs)
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim, args)
 
