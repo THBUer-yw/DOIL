@@ -88,7 +88,6 @@ class TD3(object):
 		state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
 		return self.actor(state).cpu().data.numpy().flatten()
 
-
 	def train(self, args, replay_buffer, writer, steps, gail=None):
 		self.total_it += 1
 		# Sample replay buffer 
@@ -124,7 +123,6 @@ class TD3(object):
 
 			# Compute actor losse
 			actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
-			
 			# Optimize the actor 
 			self.actor_optimizer.zero_grad()
 			actor_loss.backward()
