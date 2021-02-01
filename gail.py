@@ -181,6 +181,13 @@ class ExpertDataset(torch.utils.data.Dataset):
         all_trajectories = torch.load(file_name)
         states = all_trajectories["states"]
         next_states = torch.zeros((states.size(0), states.size(1), states.size(2)))
+        rewards = all_trajectories["rewards"]
+        epiosde_reward = []
+        for i in range(len(rewards)):
+            episode_rewards = float(torch.sum(rewards[i]))
+            epiosde_reward.append(episode_rewards)
+        epiosde_reward = np.array(epiosde_reward)
+        print(f"reward_mean:{np.mean(epiosde_reward)},reward_std:{np.std(epiosde_reward)}")
         for traj_num in range(states.size(0)):
             traj_next_states = torch.zeros(states.size(1), states.size(2))
             traj_states = states[traj_num]
