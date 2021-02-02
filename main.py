@@ -46,6 +46,7 @@ if __name__ == "__main__":
 	parser.add_argument('--gail_experts_dir', default='./gail_experts_mlp', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
 	parser.add_argument('--gail_prepoch', type=int, default=100, help='gail prepochs (default: 50)')
+	parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
 	parser.add_argument("--load_model", default="", help="Model load file name")
 	parser.add_argument("--noise_clip", default=0.5, help="Range to clip target policy noise")
@@ -113,6 +114,7 @@ if __name__ == "__main__":
 		kwargs["noise_clip"] = args.noise_clip * max_action
 		kwargs["policy_freq"] = args.policy_freq
 		kwargs["use_cuda"] = args.use_cuda
+		kwargs["args"] = args
 		if args.use_dense_network:
 			policy = Dense_TD3.TD3(**kwargs)
 			print("Using the dense net!")
@@ -189,9 +191,9 @@ if __name__ == "__main__":
 					writer.add_scalar("discriminator/dis_gradient", np.mean(np.array(dis_gps)), t+1)
 					writer.add_scalar("discriminator/total_loss", np.mean(np.array(dis_total_losses)), t+1)
 
-				policy.train(args, replay_buffer, writer, t+1, discr)
+				policy.train(replay_buffer, writer, t+1, discr)
 			else:
-				policy.train(args, replay_buffer, writer, t+1)
+				policy.train(replay_buffer, writer, t+1)
 
 		writer.add_scalar("train/rewrad", episode_reward, t+1)
 

@@ -7,6 +7,48 @@ import torch.nn.functional as F
 # Implementation of Twin Delayed Deep Deterministic Policy Gradients (TD3)
 # Paper: https://arxiv.org/abs/1802.09477
 
+class Actor_2(nn.Module):
+	def __init__(self, state_dim, action_dim, max_action):
+		super(Actor_2, self).__init__()
+
+		self.l1 = nn.Linear(state_dim, 256)
+		self.l2 = nn.Linear(256, action_dim)
+
+		self.max_action = max_action
+
+	def forward(self, state):
+		a = F.relu(self.l1(state))
+		return self.max_action * torch.tanh(self.l2(a))
+
+
+class Critic_2(nn.Module):
+	def __init__(self, state_dim, action_dim):
+		super(Critic_2, self).__init__()
+
+		# Q1 architecture
+		self.l1 = nn.Linear(state_dim + action_dim, 256)
+		self.l2 = nn.Linear(256, 1)
+
+		# Q2 architecture
+		self.l3 = nn.Linear(state_dim + action_dim, 256)
+		self.l4 = nn.Linear(256, 1)
+
+	def forward(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = self.l2(q1)
+
+		q2 = F.relu(self.l3(sa))
+		q2 = self.l4(q2)
+		return q1, q2
+
+	def Q1(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = self.l2(q1)
+		return q1
 
 class Actor(nn.Module):
 	def __init__(self, state_dim, action_dim, max_action):
@@ -62,16 +104,154 @@ class Critic(nn.Module):
 		return q1
 
 
+class Actor_4(nn.Module):
+	def __init__(self, state_dim, action_dim, max_action):
+		super(Actor_4, self).__init__()
+
+		self.l1 = nn.Linear(state_dim, 256)
+		self.l2 = nn.Linear(256, 256)
+		self.l3 = nn.Linear(256, 256)
+		self.l4 = nn.Linear(256, action_dim)
+
+		self.max_action = max_action
+
+	def forward(self, state):
+		a = F.relu(self.l1(state))
+		a = F.relu(self.l2(a))
+		a = F.relu(self.l3(a))
+		return self.max_action * torch.tanh(self.l4(a))
+
+
+class Critic_4(nn.Module):
+	def __init__(self, state_dim, action_dim):
+		super(Critic_4, self).__init__()
+
+		# Q1 architecture
+		self.l1 = nn.Linear(state_dim + action_dim, 256)
+		self.l2 = nn.Linear(256, 256)
+		self.l3 = nn.Linear(256, 256)
+		self.l4 = nn.Linear(256, 1)
+
+		# Q2 architecture
+		self.l5 = nn.Linear(state_dim + action_dim, 256)
+		self.l6 = nn.Linear(256, 256)
+		self.l7 = nn.Linear(256, 256)
+		self.l8 = nn.Linear(256, 1)
+
+	def forward(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = F.relu(self.l2(q1))
+		q1 = F.relu(self.l3(q1))
+		q1 = self.l4(q1)
+
+		q2 = F.relu(self.l5(sa))
+		q2 = F.relu(self.l6(q2))
+		q2 = F.relu(self.l7(q2))
+		q2 = self.l8(q2)
+		return q1, q2
+
+	def Q1(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = F.relu(self.l2(q1))
+		q1 = F.relu(self.l3(q1))
+		q1 = self.l4(q1)
+		return q1
+
+class Actor_5(nn.Module):
+	def __init__(self, state_dim, action_dim, max_action):
+		super(Actor_5, self).__init__()
+
+		self.l1 = nn.Linear(state_dim, 256)
+		self.l2 = nn.Linear(256, 256)
+		self.l3 = nn.Linear(256, 256)
+		self.l4 = nn.Linear(256, 256)
+		self.l5 = nn.Linear(256, action_dim)
+
+		self.max_action = max_action
+
+	def forward(self, state):
+		a = F.relu(self.l1(state))
+		a = F.relu(self.l2(a))
+		a = F.relu(self.l3(a))
+		a = F.relu(self.l4(a))
+		return self.max_action * torch.tanh(self.l5(a))
+
+
+class Critic_5(nn.Module):
+	def __init__(self, state_dim, action_dim):
+		super(Critic_5, self).__init__()
+
+		# Q1 architecture
+		self.l1 = nn.Linear(state_dim + action_dim, 256)
+		self.l2 = nn.Linear(256, 256)
+		self.l3 = nn.Linear(256, 256)
+		self.l4 = nn.Linear(256, 256)
+		self.l5 = nn.Linear(256, 1)
+
+		# Q2 architecture
+		self.l6 = nn.Linear(state_dim + action_dim, 256)
+		self.l7 = nn.Linear(256, 256)
+		self.l8 = nn.Linear(256, 256)
+		self.l9 = nn.Linear(256, 256)
+		self.l10 = nn.Linear(256, 1)
+
+	def forward(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = F.relu(self.l2(q1))
+		q1 = F.relu(self.l3(q1))
+		q1 = F.relu(self.l4(q1))
+		q1 = self.l5(q1)
+
+		q2 = F.relu(self.l6(sa))
+		q2 = F.relu(self.l7(q2))
+		q2 = F.relu(self.l8(q2))
+		q2 = F.relu(self.l9(q2))
+		q2 = self.l10(q2)
+		return q1, q2
+
+	def Q1(self, state, action):
+		sa = torch.cat([state, action], 1)
+
+		q1 = F.relu(self.l1(sa))
+		q1 = F.relu(self.l2(q1))
+		q1 = F.relu(self.l3(q1))
+		q1 = F.relu(self.l4(q1))
+		q1 = self.l5(q1)
+		return q1
+
+
 class TD3(object):
-	def __init__(self, state_dim, action_dim, max_action, use_cuda, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
+	def __init__(self, args, state_dim, action_dim, max_action, use_cuda, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
 		self.device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu")
-		self.actor = Actor(state_dim, action_dim, max_action).to(self.device)
-		self.actor_target = copy.deepcopy(self.actor)
+		self.args = args
+		if self.args.hidden_layers == 2:
+			self.actor = Actor_2(state_dim, action_dim, max_action).to(self.device)
+			self.actor_target = copy.deepcopy(self.actor)
+			self.critic = Critic_2(state_dim, action_dim).to(self.device)
+			self.critic_target = copy.deepcopy(self.critic)
+		elif self.args.hidden_layers == 4:
+			self.actor = Actor_4(state_dim, action_dim, max_action).to(self.device)
+			self.actor_target = copy.deepcopy(self.actor)
+			self.critic = Critic_4(state_dim, action_dim).to(self.device)
+			self.critic_target = copy.deepcopy(self.critic)
+		elif self.args.hidden_layers == 5:
+			self.actor = Actor_4(state_dim, action_dim, max_action).to(self.device)
+			self.actor_target = copy.deepcopy(self.actor)
+			self.critic = Critic_4(state_dim, action_dim).to(self.device)
+			self.critic_target = copy.deepcopy(self.critic)
+		else:
+			self.actor = Actor(state_dim, action_dim, max_action).to(self.device)
+			self.actor_target = copy.deepcopy(self.actor)
+			self.critic = Critic(state_dim, action_dim).to(self.device)
+			self.critic_target = copy.deepcopy(self.critic)
 		self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=3e-4)
-
-		self.critic = Critic(state_dim, action_dim).to(self.device)
-		self.critic_target = copy.deepcopy(self.critic)
 		self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=3e-4)
 
 		self.max_action = max_action
@@ -88,12 +268,12 @@ class TD3(object):
 		state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
 		return self.actor(state).cpu().data.numpy().flatten()
 
-	def train(self, args, replay_buffer, writer, steps, gail=None):
+	def train(self, replay_buffer, writer, steps, gail=None):
 		self.total_it += 1
 		# Sample replay buffer 
-		state, action, next_state, reward, not_done = replay_buffer.sample(args.batch_size)
+		state, action, next_state, reward, not_done = replay_buffer.sample(self.args.batch_size)
 		if gail:
-			reward = gail.predict_reward(state, action, args.discount, not_done, args.reward_type)
+			reward = gail.predict_reward(state, action, self.args.discount, not_done, self.args.reward_type)
 			writer.add_scalar("discriminator/gail_reward", np.mean(np.array(reward.to("cpu")), axis=0), steps)
 
 		with torch.no_grad():
