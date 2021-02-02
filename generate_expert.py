@@ -7,8 +7,6 @@ import time
 
 import TD3
 import Dense_TD3
-import OurDDPG
-import DDPG
 
 # ant 5825.0 115.6 halfcheetah 11049.1 136.2 hopper 3707.3 11.8 reacher -3.8 1.8 walker2d 4729.4 23.0
 # InvertedDoublePendulum 9359.8 0.1 bipedalwalker 295.4 1.2
@@ -20,10 +18,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
     parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
+    parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
     parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
-    parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
-    parser.add_argument("--random", default=1, type=int, help="evaluate the random policy")
+    parser.add_argument("--use_dense_network", type=int, default=0, help="whether use densenet")
+    parser.add_argument("--random", default=0, type=int, help="evaluate the random policy")
     args = parser.parse_args()
 
 
@@ -45,21 +44,18 @@ if __name__ == "__main__":
 
     if args.policy == "TD3":
         # Target policy smoothing is scaled wrt the action scale
+        kwargs["args"] = args
         if args.use_dense_network:
             policy = Dense_TD3.TD3(**kwargs)
             print("Using the dense net!")
         else:
             policy = TD3.TD3(**kwargs)
             print("Using the MLP!")
-    elif args.policy == "OurDDPG":
-        policy = OurDDPG.DDPG(**kwargs)
-    elif args.policy == "DDPG":
-        policy = DDPG.DDPG(**kwargs)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model_file_name = args.env+"_"+"seed_"+str(args.seed)
     if not args.random:
-        policy.load(f"./models_dense/{model_file_name}", device)
+        policy.load(f"./models_mlp/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
@@ -118,7 +114,7 @@ if __name__ == "__main__":
         "lengths": lengths
     }
 
-    torch.save(expert_data, os.path.join("./gail_experts/", data_file_name), _use_new_zipfile_serialization=False)
+    torch.save(expert_data, os.path.join("./gail_experts_mlp/", data_file_name), _use_new_zipfile_serialization=False)
 
     print("---------------------------------------")
     print(f"env:{args.env}, evaluation over last {args.eval_episodes} episodes, mean_reward:{avg_reward:.1f}, reward_std:{reward_std:.1f}")
