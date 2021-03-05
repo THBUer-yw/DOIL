@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="Reacher-v2", help="OpenAI gym environment name")
+    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
     parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
     parser.add_argument("--seed", default=8316, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
@@ -60,10 +60,12 @@ if __name__ == "__main__":
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
-    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2" or "BipedalWalker-v3":
+    if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2":
         max_lengh = 1000
     if args.env == "Reacher-v2":
         max_lengh = 50
+    if args.env == "BipedalWalker-v3":
+        max_lengh = 810
 
     states = torch.zeros([args.eval_episodes, max_lengh, kwargs["state_dim"]])
     next_states = torch.zeros([args.eval_episodes, max_lengh, kwargs["state_dim"]])
@@ -72,7 +74,6 @@ if __name__ == "__main__":
     dones = torch.zeros([args.eval_episodes, max_lengh, 1])
     lengths = []
     episodes_reward = []
-
     for i in range(args.eval_episodes):
         state, done = env.reset(), False
         path_length = 0
