@@ -180,26 +180,26 @@ class ExpertDataset(torch.utils.data.Dataset):
     def __init__(self, file_name, num_trajectories=4, subsample_frequency=20, train=True, start=0, states_only=False):
         all_trajectories = torch.load(file_name)
         states = all_trajectories["states"]
-        next_states = torch.zeros((states.size(0), states.size(1), states.size(2)))
-        rewards = all_trajectories["rewards"]
-        epiosde_reward = []
-        for i in range(len(rewards)):
-            episode_rewards = float(torch.sum(rewards[i]))
-            epiosde_reward.append(episode_rewards)
-        epiosde_reward = np.array(epiosde_reward)
-        print(f"reward_mean:{np.mean(epiosde_reward)},reward_std:{np.std(epiosde_reward)}")
-        for traj_num in range(states.size(0)):
-            traj_next_states = torch.zeros(states.size(1), states.size(2))
-            traj_states = states[traj_num]
-            for step in range(1, states.size(1)):
-                traj_next_states[step-1] = traj_states[step]
-            last_next_states = torch.zeros(states.size(2))
-            traj_next_states[-1] = last_next_states
-            next_states[traj_num] = traj_next_states
-
-        all_trajectories["next_states"] = next_states
+        # next_states = torch.zeros((states.size(0), states.size(1), states.size(2)))
+        # rewards = all_trajectories["rewards"]
+        # epiosde_reward = []
+        # for i in range(len(rewards)):
+        #     episode_rewards = float(torch.sum(rewards[i]))
+        #     epiosde_reward.append(episode_rewards)
+        # epiosde_reward = np.array(epiosde_reward)
+        # print(f"reward_mean:{np.mean(epiosde_reward)},reward_std:{np.std(epiosde_reward)}")
+        # for traj_num in range(states.size(0)):
+        #     traj_next_states = torch.zeros(states.size(1), states.size(2))
+        #     traj_states = states[traj_num]
+        #     for step in range(1, states.size(1)):
+        #         traj_next_states[step-1] = traj_states[step]
+        #     last_next_states = torch.zeros(states.size(2))
+        #     traj_next_states[-1] = last_next_states
+        #     next_states[traj_num] = traj_next_states
+        #
+        # all_trajectories["next_states"] = next_states
         perm = torch.randperm(all_trajectories['states'].size(0))
-        #idx = perm[:num_trajectories]
+        # idx = perm[:num_trajectories]
         idx = np.arange(num_trajectories) + start
         if not train:
             assert start > 0
