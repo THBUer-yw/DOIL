@@ -155,7 +155,10 @@ class TD3(object):
         state, action, next_state, reward, not_done = replay_buffer.sample(self.args.batch_size)
 
         if gail:
-            reward = gail.predict_reward(state, action, self.args.discount, not_done, self.args.reward_type)
+            if self.args.states_only:
+                reward = gail.predict_reward(state, next_state, self.args.discount, not_done, self.args.reward_type)
+            else:
+                reward = gail.predict_reward(state, action, self.args.discount, not_done, self.args.reward_type)
             writer.add_scalar("discriminator/gail_reward", np.mean(np.array(reward.to("cpu")), axis=0), steps)
 
         with torch.no_grad():
