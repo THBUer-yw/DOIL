@@ -69,7 +69,8 @@ def plot(logdir):
             continue
         df = pd.DataFrame(columns=('method', 'seed', 'Steps', 'Return'))
         sns.set()
-        fig, ax = plt.subplots(1, 1, figsize=(5, 3), dpi=500)
+        # 5 3 ; 6 4
+        fig, ax = plt.subplots(1, 1, figsize=(6, 4), dpi=500)
         # ax.xaxis.get_major_formatter().set_powerlimits((0, 1))
         # ax.set_xlabel(xlabel="Steps",fontsize=6)
         # ax.set_ylabel(ylabel="Return",fontsize=6)
@@ -190,7 +191,7 @@ def plot(logdir):
                         print("File {} done.".format(logpath))
 
         os.makedirs(r"./plot_methods", exist_ok=True)
-        palette = sns.color_palette("deep", 6)
+        palette = sns.color_palette("deep", 10)
         # palette = sns.hls_palette(4, l=.3, s=.8)
         g = sns.lineplot(x=df.Steps, y="Return", data=df, hue="method", sizes=3, style="method", dashes={'DOIL-v1':(2,0),'DOIL-v2':(2,0),'GAIL':(2,0),'BC':(2,0),'Random':(3,1),"Expert":(3,1)}, palette=palette,
             hue_order=['DOIL-v1','DOIL-v2','GAIL','BC','Random',"Expert"])
