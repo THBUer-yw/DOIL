@@ -18,12 +18,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
-    parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
-    parser.add_argument("--seed", default=8316, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
     parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
-    parser.add_argument("--use_dense_network", type=int, default=0, help="whether use densenet")
+    parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
     parser.add_argument("--random", default=0, type=int, help="evaluate the random policy")
+    parser.add_argument("--render", default=1, type=int, help="whether to render the experiment")
+    parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
+    parser.add_argument('--states_only', type=int, default=0, help="if do imitation learning using only states tuple")
+    parser.add_argument("--use_dense_network", type=int, default=0, help="whether use densenet")
     args = parser.parse_args()
 
 
@@ -54,9 +56,13 @@ if __name__ == "__main__":
             print("Using the MLP!")
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model_file_name = args.env+"_"+"seed_"+str(args.seed)
+
+    if args.render:
+        model_file_name = args.env+"_seed_"+str(args.seed)+"_dense_"+str(args.use_dense_network)+"_states_only_"+str(args.states_only)
+    else:
+        model_file_name = args.env + "_seed_" + str(args.seed)
     if not args.random:
-        policy.load(f"./models_dense/{model_file_name}", device)
+        policy.load(f"./models/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
@@ -88,8 +94,9 @@ if __name__ == "__main__":
             actions[i][path_length] = torch.tensor(action)
 
             state, reward, done, _ = env.step(action)
-            # env.render()
-            # time.sleep(0.02)
+            if args.render:
+                env.render()
+                time.sleep(0.02)
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
@@ -115,7 +122,8 @@ if __name__ == "__main__":
         "lengths": lengths
     }
 
-    torch.save(expert_data, os.path.join("./gail_experts_dense/", data_file_name), _use_new_zipfile_serialization=False)
+    if not args.render:
+        torch.save(expert_data, os.path.join("./gail_experts_dense/", data_file_name), _use_new_zipfile_serialization=False)
 
     print("---------------------------------------")
     print(f"env:{args.env}, evaluation over last {args.eval_episodes} episodes, mean_reward:{avg_reward:.1f}, reward_std:{reward_std:.1f}")
