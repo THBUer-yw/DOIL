@@ -206,7 +206,7 @@ if __name__ == "__main__":
 
 		# Evaluate episode
 		if (t + 1) % args.eval_freq == 0:
-			file_name = args.env+"_"+"seed_"+str(args.seed)
+			file_name = args.env+"_seed_"+str(args.seed)+"_dense_"+str(args.use_dense_network)+"_states_only_"+str(args.states_only)
 			mean_eval_rewards = eval_policy(policy, args.env, args.seed, eval_episodes=args.eval_episodes)
 			end_time = time.time()
 			fps = (t+1)/(end_time-start_time)
@@ -216,8 +216,7 @@ if __name__ == "__main__":
 				print("train_step:{}, evaluation using {} episodes, mean reward {:.2f}".format(t+1, args.eval_episodes, mean_eval_rewards), file=file)
 			if mean_eval_rewards > max_eval_rewards and args.save_model:
 				max_eval_rewards = mean_eval_rewards
-				if not args.gail:
-					print("***********************")
-					print("Saving model!")
-					print("***********************")
-					policy.save(f"./models/{file_name}")
+				print("***********************")
+				print("Saving model!")
+				print("***********************")
+				policy.save(f"./models/{file_name}")
