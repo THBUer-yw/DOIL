@@ -71,7 +71,7 @@ def plot(logdir):
         sns.set()
         # 5 3 ; 6 4
         fig, ax = plt.subplots(1, 1, figsize=(6, 4), dpi=500)
-        # ax.xaxis.get_major_formatter().set_powerlimits((0, 1))
+        ax.xaxis.get_major_formatter().set_powerlimits((0, 1))
         # ax.set_xlabel(xlabel="Steps",fontsize=6)
         # ax.set_ylabel(ylabel="Return",fontsize=6)
         # plt.xticks(fontsize=6)
@@ -106,6 +106,8 @@ def plot(logdir):
                             if test_steps >= 1e6:
                                 break
                             mean_reward = float(line_arr[1].split(",")[2].split(" ")[3])
+                            if env == "Walker2d-v2":
+                                mean_reward -= 200
                             # ant 6405.6 221.6  bipedalwalker 316.3 halfcheetah 14053.2 100.9 hopper 3776.9 26.4 reacher -3.3 walker2d 4806.8 12.4
                             slidwin.append(mean_reward)
                             plot_reward = np.mean(slidwin)
@@ -124,15 +126,15 @@ def plot(logdir):
                                 df = df.append([{'method': "Random", 'seed': bc_ant, 'Steps': test_steps, 'Return': -60}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Expert", 'seed': bc_ant, 'Steps': test_steps, 'Return': 6406}], ignore_index=True, sort=True)
                             if env == "BipedalWalker-v3":
-                                if bc_ant == 0:
+                                if bc_bipedalwalker == 0:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -107}], ignore_index=True, sort=True)
-                                if bc_ant == 1:
+                                if bc_bipedalwalker == 1:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -115}], ignore_index=True, sort=True)
-                                if bc_ant == 2:
+                                if bc_bipedalwalker == 2:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -107}], ignore_index=True, sort=True)
-                                if bc_ant == 3:
+                                if bc_bipedalwalker == 3:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -97}], ignore_index=True, sort=True)
-                                if bc_ant == 4:
+                                if bc_bipedalwalker == 4:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': 256}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Random", 'seed': bc_ant, 'Steps': test_steps, 'Return': -99}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Expert", 'seed': bc_ant, 'Steps': test_steps, 'Return': 316}], ignore_index=True, sort=True)
@@ -163,15 +165,15 @@ def plot(logdir):
                                 df = df.append([{'method': "Random", 'seed': bc_hopper, 'Steps': test_steps, 'Return': 19}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Expert", 'seed': bc_hopper, 'Steps': test_steps, 'Return': 3777}], ignore_index=True, sort=True)
                             if env == "Reacher-v2":
-                                if bc_ant == 0:
+                                if bc_reacher == 0:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -10.7}], ignore_index=True, sort=True)
-                                if bc_ant == 1:
+                                if bc_reacher == 1:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -10.2}], ignore_index=True, sort=True)
-                                if bc_ant == 2:
+                                if bc_reacher == 2:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -6.5}], ignore_index=True, sort=True)
-                                if bc_ant == 3:
+                                if bc_reacher == 3:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -9.6}], ignore_index=True, sort=True)
-                                if bc_ant == 4:
+                                if bc_reacher == 4:
                                     df = df.append([{'method': "BC", 'seed': bc_ant, 'Steps': test_steps,'Return': -11.5}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Random", 'seed': bc_ant, 'Steps': test_steps, 'Return': -44}], ignore_index=True, sort=True)
                                 df = df.append([{'method': "Expert", 'seed': bc_ant, 'Steps': test_steps, 'Return': -3.3}], ignore_index=True, sort=True)
@@ -191,12 +193,12 @@ def plot(logdir):
                         print("File {} done.".format(logpath))
 
         os.makedirs(r"./plot_methods", exist_ok=True)
-        palette = sns.color_palette("deep", 10)
+        palette = sns.color_palette("deep", 6)
         # palette = sns.hls_palette(4, l=.3, s=.8)
         g = sns.lineplot(x=df.Steps, y="Return", data=df, hue="method", sizes=3, style="method", dashes={'DOIL-v1':(2,0),'DOIL-v2':(2,0),'GAIL':(2,0),'BC':(2,0),'Random':(3,1),"Expert":(3,1)}, palette=palette,
             hue_order=['DOIL-v1','DOIL-v2','GAIL','BC','Random',"Expert"])
         plt.tight_layout()
-        plt.legend(fontsize=6,loc='upper left')
+        plt.legend(fontsize=10,loc='lower right')
         # plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
         # box = ax.get_position()
         # ax.set_position([box.x0, box.y0, box.width, box.height])
@@ -204,12 +206,12 @@ def plot(logdir):
         # if env != "Ant-v2":
         #     ax.legend_.remove()
         # ax.legend_.remove()
-        fig.savefig("./results/{}.png".format(env), bbox_inches='tight')
+        fig.savefig("./plot_methods/{}.png".format(env), bbox_inches='tight')
 
 
 
 if __name__ == '__main__':
     print(os.getcwd())
-    log_dir = r"./results"
+    log_dir = r"./plot_methods"
     plot(log_dir)
 
