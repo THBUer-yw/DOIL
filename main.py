@@ -43,10 +43,10 @@ if __name__ == "__main__":
 	parser.add_argument("--expl_noise", default=0.1, help="Std of Gaussian exploration noise")
 	parser.add_argument('--gail', type=int, default=1, help='do imitation learning with gail')
 	parser.add_argument('--gail_batch_size', type=int, default=128, help='gail batch size (default: 128)')
-	parser.add_argument('--gail_experts_dir', default='./gail_experts_mlp', help='directory that contains expert demonstrations for gail')
+	parser.add_argument('--gail_experts_dir', default='./gail_experts_dense', help='directory that contains expert demonstrations for gail')
 	parser.add_argument('--gail_epoch', type=int, default=50, help='gail epochs (default: 5)')
 	parser.add_argument('--gail_prepoch', type=int, default=100, help='gail prepochs (default: 50)')
-	parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
+	parser.add_argument('--hidden_layers', type=int, default=1, help='numbers of hidden layers')
 	parser.add_argument('--max_horizon', type=int, default=2048, help='steps interval for training dicriminator')
 	parser.add_argument("--load_model", default="", help="Model load file name")
 	parser.add_argument("--noise_clip", default=0.5, help="Range to clip target policy noise")
@@ -114,6 +114,7 @@ if __name__ == "__main__":
 		kwargs["noise_clip"] = args.noise_clip * max_action
 		kwargs["policy_freq"] = args.policy_freq
 		kwargs["use_cuda"] = args.use_cuda
+		kwargs["num_hidden_layers"] = args.hidden_layers
 		kwargs["args"] = args
 		if args.use_dense_network:
 			policy = Dense_TD3.TD3(**kwargs)
