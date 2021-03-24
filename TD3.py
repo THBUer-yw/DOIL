@@ -7,250 +7,123 @@ import torch.nn.functional as F
 # Implementation of Twin Delayed Deep Deterministic Policy Gradients (TD3)
 # Paper: https://arxiv.org/abs/1802.09477
 
-class Actor_2(nn.Module):
-	def __init__(self, state_dim, action_dim, max_action):
-		super(Actor_2, self).__init__()
-
-		self.l1 = nn.Linear(state_dim, 256)
-		self.l2 = nn.Linear(256, action_dim)
-
-		self.max_action = max_action
-
-	def forward(self, state):
-		a = F.relu(self.l1(state))
-		return self.max_action * torch.tanh(self.l2(a))
-
-
-class Critic_2(nn.Module):
-	def __init__(self, state_dim, action_dim):
-		super(Critic_2, self).__init__()
-
-		# Q1 architecture
-		self.l1 = nn.Linear(state_dim + action_dim, 256)
-		self.l2 = nn.Linear(256, 1)
-
-		# Q2 architecture
-		self.l3 = nn.Linear(state_dim + action_dim, 256)
-		self.l4 = nn.Linear(256, 1)
-
-	def forward(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = self.l2(q1)
-
-		q2 = F.relu(self.l3(sa))
-		q2 = self.l4(q2)
-		return q1, q2
-
-	def Q1(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = self.l2(q1)
-		return q1
-
 class Actor(nn.Module):
-	def __init__(self, state_dim, action_dim, max_action):
+	def __init__(self, state_dim, action_dim, max_action, num_hidden_layers):
 		super(Actor, self).__init__()
+		self.num_hidden_layers = num_hidden_layers
+		self.input_layer = nn.Linear(state_dim, 256)
+		self.hidden_layers = nn.ModuleList([nn.Linear(256, 256) for _ in range(self.num_hidden_layers)])
+		self.output_layer = nn.Linear(256, action_dim)
 
-		self.l1 = nn.Linear(state_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, action_dim)
-		
 		self.max_action = max_action
-		
 
 	def forward(self, state):
-		a = F.relu(self.l1(state))
-		a = F.relu(self.l2(a))
-		return self.max_action * torch.tanh(self.l3(a))
+		a = F.relu(self.input_layer(state))
+		for i in range(self.num_hidden_layers):
+			a = F.relu(self.hidden_layers[i](a))
+		return self.max_action * torch.tanh(self.output_layer(a))
 
 
 class Critic(nn.Module):
-	def __init__(self, state_dim, action_dim):
+	def __init__(self, state_dim, action_dim, num_hidden_layers):
 		super(Critic, self).__init__()
+		self.num_hidden_layers = num_hidden_layers
 
 		# Q1 architecture
-		self.l1 = nn.Linear(state_dim + action_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, 1)
+		self.input_layer1 = nn.Linear(state_dim + action_dim, 256)
+		self.hidden_layers1 = nn.ModuleList([nn.Linear(256, 256) for _ in range(self.num_hidden_layers)])
+		self.output_layer1 = nn.Linear(256, 1)
 
 		# Q2 architecture
-		self.l4 = nn.Linear(state_dim + action_dim, 256)
-		self.l5 = nn.Linear(256, 256)
-		self.l6 = nn.Linear(256, 1)
-
+		self.input_layer2 = nn.Linear(state_dim + action_dim, 256)
+		self.hidden_layers2 = nn.ModuleList([nn.Linear(256, 256) for _ in range(self.num_hidden_layers)])
+		self.output_layer2 = nn.Linear(256, 1)
 
 	def forward(self, state, action):
 		sa = torch.cat([state, action], 1)
 
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = self.l3(q1)
+		q1 = F.relu(self.input_layer1(sa))
+		for i in range(self.num_hidden_layers):
+			q1 = F.relu(self.hidden_layers1[i](q1))
+		q1 = self.output_layer1(q1)
 
-		q2 = F.relu(self.l4(sa))
-		q2 = F.relu(self.l5(q2))
-		q2 = self.l6(q2)
-		return q1, q2
-
-
-	def Q1(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = self.l3(q1)
-		return q1
-
-
-class Actor_4(nn.Module):
-	def __init__(self, state_dim, action_dim, max_action):
-		super(Actor_4, self).__init__()
-
-		self.l1 = nn.Linear(state_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, 256)
-		self.l4 = nn.Linear(256, action_dim)
-
-		self.max_action = max_action
-
-	def forward(self, state):
-		a = F.relu(self.l1(state))
-		a = F.relu(self.l2(a))
-		a = F.relu(self.l3(a))
-		return self.max_action * torch.tanh(self.l4(a))
-
-
-class Critic_4(nn.Module):
-	def __init__(self, state_dim, action_dim):
-		super(Critic_4, self).__init__()
-
-		# Q1 architecture
-		self.l1 = nn.Linear(state_dim + action_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, 256)
-		self.l4 = nn.Linear(256, 1)
-
-		# Q2 architecture
-		self.l5 = nn.Linear(state_dim + action_dim, 256)
-		self.l6 = nn.Linear(256, 256)
-		self.l7 = nn.Linear(256, 256)
-		self.l8 = nn.Linear(256, 1)
-
-	def forward(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = F.relu(self.l3(q1))
-		q1 = self.l4(q1)
-
-		q2 = F.relu(self.l5(sa))
-		q2 = F.relu(self.l6(q2))
-		q2 = F.relu(self.l7(q2))
-		q2 = self.l8(q2)
+		q2 = F.relu(self.input_layer2(sa))
+		for i in range(self.num_hidden_layers):
+			q2 = F.relu(self.hidden_layers2[i](q2))
+		q2 = self.output_layer2(q2)
 		return q1, q2
 
 	def Q1(self, state, action):
 		sa = torch.cat([state, action], 1)
 
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = F.relu(self.l3(q1))
-		q1 = self.l4(q1)
+		q1 = F.relu(self.input_layer1(sa))
+		for i in range(self.num_hidden_layers):
+			q1 = F.relu(self.hidden_layers1[i](q1))
+		q1 = self.output_layer1(q1)
 		return q1
 
-class Actor_5(nn.Module):
-	def __init__(self, state_dim, action_dim, max_action):
-		super(Actor_5, self).__init__()
-
-		self.l1 = nn.Linear(state_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, 256)
-		self.l4 = nn.Linear(256, 256)
-		self.l5 = nn.Linear(256, action_dim)
-
-		self.max_action = max_action
-
-	def forward(self, state):
-		a = F.relu(self.l1(state))
-		a = F.relu(self.l2(a))
-		a = F.relu(self.l3(a))
-		a = F.relu(self.l4(a))
-		return self.max_action * torch.tanh(self.l5(a))
-
-
-class Critic_5(nn.Module):
-	def __init__(self, state_dim, action_dim):
-		super(Critic_5, self).__init__()
-
-		# Q1 architecture
-		self.l1 = nn.Linear(state_dim + action_dim, 256)
-		self.l2 = nn.Linear(256, 256)
-		self.l3 = nn.Linear(256, 256)
-		self.l4 = nn.Linear(256, 256)
-		self.l5 = nn.Linear(256, 1)
-
-		# Q2 architecture
-		self.l6 = nn.Linear(state_dim + action_dim, 256)
-		self.l7 = nn.Linear(256, 256)
-		self.l8 = nn.Linear(256, 256)
-		self.l9 = nn.Linear(256, 256)
-		self.l10 = nn.Linear(256, 1)
-
-	def forward(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = F.relu(self.l3(q1))
-		q1 = F.relu(self.l4(q1))
-		q1 = self.l5(q1)
-
-		q2 = F.relu(self.l6(sa))
-		q2 = F.relu(self.l7(q2))
-		q2 = F.relu(self.l8(q2))
-		q2 = F.relu(self.l9(q2))
-		q2 = self.l10(q2)
-		return q1, q2
-
-	def Q1(self, state, action):
-		sa = torch.cat([state, action], 1)
-
-		q1 = F.relu(self.l1(sa))
-		q1 = F.relu(self.l2(q1))
-		q1 = F.relu(self.l3(q1))
-		q1 = F.relu(self.l4(q1))
-		q1 = self.l5(q1)
-		return q1
-
+# class Actor(nn.Module):
+# 	def __init__(self, state_dim, action_dim, max_action, num_hidden_layers):
+# 		super(Actor, self).__init__()
+#
+# 		self.l1 = nn.Linear(state_dim, 256)
+# 		self.l2 = nn.Linear(256, 256)
+# 		self.l3 = nn.Linear(256, action_dim)
+#
+# 		self.max_action = max_action
+#
+#
+# 	def forward(self, state):
+# 		a = F.relu(self.l1(state))
+# 		a = F.relu(self.l2(a))
+# 		return self.max_action * torch.tanh(self.l3(a))
+#
+#
+# class Critic(nn.Module):
+# 	def __init__(self, state_dim, action_dim, num_hidden_layers):
+# 		super(Critic, self).__init__()
+#
+# 		# Q1 architecture
+# 		self.l1 = nn.Linear(state_dim + action_dim, 256)
+# 		self.l2 = nn.Linear(256, 256)
+# 		self.l3 = nn.Linear(256, 1)
+#
+# 		# Q2 architecture
+# 		self.l4 = nn.Linear(state_dim + action_dim, 256)
+# 		self.l5 = nn.Linear(256, 256)
+# 		self.l6 = nn.Linear(256, 1)
+#
+#
+# 	def forward(self, state, action):
+# 		sa = torch.cat([state, action], 1)
+#
+# 		q1 = F.relu(self.l1(sa))
+# 		q1 = F.relu(self.l2(q1))
+# 		q1 = self.l3(q1)
+#
+# 		q2 = F.relu(self.l4(sa))
+# 		q2 = F.relu(self.l5(q2))
+# 		q2 = self.l6(q2)
+# 		return q1, q2
+#
+#
+# 	def Q1(self, state, action):
+# 		sa = torch.cat([state, action], 1)
+#
+# 		q1 = F.relu(self.l1(sa))
+# 		q1 = F.relu(self.l2(q1))
+# 		q1 = self.l3(q1)
+# 		return q1
 
 class TD3(object):
-	def __init__(self, args, state_dim, action_dim, max_action, use_cuda, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
+	def __init__(self, args, state_dim, action_dim, max_action, use_cuda, num_hidden_layers, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
 		self.device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu")
 		self.args = args
-		if self.args.hidden_layers == 2:
-			self.actor = Actor_2(state_dim, action_dim, max_action).to(self.device)
-			self.actor_target = copy.deepcopy(self.actor)
-			self.critic = Critic_2(state_dim, action_dim).to(self.device)
-			self.critic_target = copy.deepcopy(self.critic)
-		elif self.args.hidden_layers == 4:
-			self.actor = Actor_4(state_dim, action_dim, max_action).to(self.device)
-			self.actor_target = copy.deepcopy(self.actor)
-			self.critic = Critic_4(state_dim, action_dim).to(self.device)
-			self.critic_target = copy.deepcopy(self.critic)
-		elif self.args.hidden_layers == 5:
-			self.actor = Actor_4(state_dim, action_dim, max_action).to(self.device)
-			self.actor_target = copy.deepcopy(self.actor)
-			self.critic = Critic_4(state_dim, action_dim).to(self.device)
-			self.critic_target = copy.deepcopy(self.critic)
-		else:
-			self.actor = Actor(state_dim, action_dim, max_action).to(self.device)
-			self.actor_target = copy.deepcopy(self.actor)
-			self.critic = Critic(state_dim, action_dim).to(self.device)
-			self.critic_target = copy.deepcopy(self.critic)
+		self.actor = Actor(state_dim, action_dim, max_action, num_hidden_layers).to(self.device)
+		self.actor_target = copy.deepcopy(self.actor)
+		self.critic = Critic(state_dim, action_dim, num_hidden_layers).to(self.device)
+		self.critic_target = copy.deepcopy(self.critic)
 		self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=3e-4)
 		self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=3e-4)
 
