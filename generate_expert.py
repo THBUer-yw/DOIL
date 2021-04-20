@@ -18,14 +18,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy", default="TD3", help="Policy name (TD3, DDPG or OurDDPG)")
-    parser.add_argument("--env", default="HalfCheetah-v2", help="OpenAI gym environment name")
-    parser.add_argument("--eval_episodes", default=20, type=int, help="How often (time steps) we evaluate")
+    parser.add_argument("--env", default="BipedalWalker-v3", help="OpenAI gym environment name")
+    parser.add_argument("--eval_episodes", default=1, type=int, help="How often (time steps) we evaluate")
     parser.add_argument('--hidden_layers', type=int, default=3, help='numbers of hidden layers')
+    parser.add_argument("--model_seed", default=8052, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument("--random", default=0, type=int, help="evaluate the random policy")
     parser.add_argument("--render", default=1, type=int, help="whether to render the experiment")
     parser.add_argument("--seed", default=0, type=int, help="Sets Gym, PyTorch and Numpy seeds")
     parser.add_argument('--states_only', type=int, default=0, help="if do imitation learning using only states tuple")
-    parser.add_argument("--use_dense_network", type=int, default=0, help="whether use densenet")
+    parser.add_argument("--use_dense_network", type=int, default=1, help="whether use densenet")
     args = parser.parse_args()
 
 
@@ -57,27 +58,25 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    if args.render:
-        model_file_name = args.env+"_seed_"+str(args.seed)+"_dense_"+str(args.use_dense_network)+"_states_only_"+str(args.states_only)
-    else:
-        model_file_name = args.env + "_seed_" + str(args.seed)
+    model_file_name = args.env+"_seed_"+str(args.model_seed)+"_dense_"+str(args.use_dense_network)+"_states_only_"+str(args.states_only)
+    # model_file_name = args.env + "_seed_" + str(args.seed)
     if not args.random:
         policy.load(f"./models/{model_file_name}", device)
 
     data_file_name = "trajs_"+args.env.lower()[:-3]+".pt"
 
     if args.env == "Ant-v2" or "HalfCheetah-v2" or "Hopper-v2" or "Walker2d-v2":
-        max_lengh = 1000
+        max_length = 1000
     if args.env == "Reacher-v2":
-        max_lengh = 50
+        max_length = 50
     if args.env == "BipedalWalker-v3":
-        max_lengh = 810
+        max_length = 810
 
-    states = torch.zeros([args.eval_episodes, max_lengh, kwargs["state_dim"]])
-    next_states = torch.zeros([args.eval_episodes, max_lengh, kwargs["state_dim"]])
-    actions = torch.zeros([args.eval_episodes, max_lengh, kwargs["action_dim"]])
-    rewards = torch.zeros([args.eval_episodes, max_lengh, 1])
-    dones = torch.zeros([args.eval_episodes, max_lengh, 1])
+    states = torch.zeros([args.eval_episodes, max_length, kwargs["state_dim"]])
+    next_states = torch.zeros([args.eval_episodes, max_length, kwargs["state_dim"]])
+    actions = torch.zeros([args.eval_episodes, max_length, kwargs["action_dim"]])
+    rewards = torch.zeros([args.eval_episodes, max_length, 1])
+    dones = torch.zeros([args.eval_episodes, max_length, 1])
     lengths = []
     episodes_reward = []
     for i in range(args.eval_episodes):
@@ -96,7 +95,7 @@ if __name__ == "__main__":
             state, reward, done, _ = env.step(action)
             if args.render:
                 env.render()
-                time.sleep(0.02)
+                # time.sleep(0.01)
 
             next_states[i][path_length] = torch.tensor(state)
             rewards[i][path_length] = torch.tensor(reward)
