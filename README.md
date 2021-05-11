@@ -1,6 +1,8 @@
-# Addressing Function Approximation Error in Actor-Critic Methods
+# Dense connections based Off-policy adversarial Imitation Learning
 
-PyTorch implementation of Twin Delayed Deep Deterministic Policy Gradients (TD3). If you use our code or data please cite the [paper](https://arxiv.org/abs/1802.09477).
+PyTorch implementation of Dense connections based Off-policy adversarial Imitation Learning (DOIL).
+
+In DOIL, we use the [TD3](https://arxiv.org/pdf/1802.09477.pdf) algorithm to train the imitation policy. In addition, [dense connections](https://arxiv.org/pdf/1608.06993.pdf) are integrated into the actor network and the critic network of DOIL. Both the TD3 algorithm and dense connections are benificial for improving the sample efficiency of [GAIL](https://arxiv.org/pdf/1606.03476.pdf).
 
 Method is tested on [MuJoCo](http://www.mujoco.org/) continuous control tasks in [OpenAI gym](https://github.com/openai/gym). 
 Networks are trained using [PyTorch 1.2](https://github.com/pytorch/pytorch) and Python 3.7. 
