@@ -116,10 +116,10 @@ if __name__ == "__main__":
 		kwargs["use_cuda"] = args.use_cuda
 		kwargs["args"] = args
 		if args.use_dense_network:
-			kwargs["num_hidden_layers"] = args.hidden_layers
 			policy = Dense_TD3.TD3(**kwargs)
 			print("Using the dense net!")
 		else:
+			kwargs["num_hidden_layers"] = args.hidden_layers
 			policy = TD3.TD3(**kwargs)
 			print("Using the MLP!")
 
