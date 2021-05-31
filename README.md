@@ -13,15 +13,14 @@ We use the official TD3 code of [D2RL](https://github.com/pairlab/d2rl) to train
 ### Usage
 The ablation experiments can be reproduced by running:
 ```
-./experiments.sh
+./run_ablation.sh
 ```
-Experiments on single environments can be run by calling:
+The main experiments for DOIL can be reproduced by running:
 ```
-python main.py --env HalfCheetah-v2
+./run_experiments.sh
 ```
 
-Hyper-parameters can be modified with different arguments to main.py. We include an implementation of DDPG (DDPG.py), which is not used in the paper, for easy comparison of hyper-parameters with TD3. This is not the implementation of "Our DDPG" as used in the paper (see OurDDPG.py). 
+We can also run experiments when reward types vary and using only states transitions by changing the arguments **reward_type** and **states_only**, respectively. 
 
-Algorithms which TD3 compares against (PPO, TRPO, ACKTR, DDPG) can be found at [OpenAI baselines repository](https://github.com/openai/baselines). 
-
+If the argument **wdail** is set ture, then WGAN is used to train the discriminator, just try it!
 ### Results
