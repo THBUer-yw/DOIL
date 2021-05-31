@@ -114,9 +114,9 @@ if __name__ == "__main__":
 		kwargs["noise_clip"] = args.noise_clip * max_action
 		kwargs["policy_freq"] = args.policy_freq
 		kwargs["use_cuda"] = args.use_cuda
-		kwargs["num_hidden_layers"] = args.hidden_layers
 		kwargs["args"] = args
 		if args.use_dense_network:
+			kwargs["num_hidden_layers"] = args.hidden_layers
 			policy = Dense_TD3.TD3(**kwargs)
 			print("Using the dense net!")
 		else:
